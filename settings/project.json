@@ -1,0 +1,62 @@
+{
+  "start-scene": "8d2e118c-8aec-4588-8672-17a7e86ad88c",
+  "group-list": [
+    "arr_player",
+    "arr_enemy",
+    "arr_skill",
+    "default"
+  ],
+  "collision-matrix": [
+    [
+      false
+    ],
+    [
+      false,
+      false,
+      true
+    ],
+    [
+      false,
+      true,
+      false
+    ],
+    [
+      false,
+      false,
+      false,
+      false
+    ]
+  ],
+  "excluded-modules": [
+    "DragonBones",
+    "Physics",
+    "ParticleSystem",
+    "StudioComponent",
+    "TiledMap",
+    "3D",
+    "3D Primitive"
+  ],
+  "last-module-event-record-time": 1574323201335,
+  "design-resolution-width": 640,
+  "design-resolution-height": 1140,
+  "fit-width": true,
+  "fit-height": true,
+  "use-project-simulator-setting": false,
+  "simulator-orientation": false,
+  "use-customize-simulator": true,
+  "simulator-resolution": {
+    "height": 640,
+    "width": 960
+  },
+  "assets-sort-type": "name",
+  "facebook": {
+    "appID": "",
+    "audience": {
+      "enable": false
+    },
+    "enable": false,
+    "live": {
+      "enable": false
+    }
+  }
+}
