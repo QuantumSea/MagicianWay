@@ -162,7 +162,6 @@ cc.Class({
         this.checkPointLb.getComponent(cc.Label).string = "第" + this.checkPointData.checkPointIdx + "关";
 
         self.playerBorn();
-        self.enemyBorn();
     },
 
     playerBorn: function () {
