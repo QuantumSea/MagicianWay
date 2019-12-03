@@ -1,10 +1,10 @@
 {
-  "start-scene": "8d2e118c-8aec-4588-8672-17a7e86ad88c",
+  "start-scene": "11e28342-2008-4f4c-bc62-867fdd2e91b8",
   "group-list": [
-    "arr_player",
+    "default",
     "arr_enemy",
     "arr_skill",
-    "default"
+    "arr_player"
   ],
   "collision-matrix": [
     [

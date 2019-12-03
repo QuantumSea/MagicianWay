@@ -1,4 +1,6 @@
 
+var AIACTTAG = 1000
+
 cc.Class({
     extends: require("RoleComponent"),
 
@@ -12,6 +14,8 @@ cc.Class({
 
     onLoad: function  () {
         this._super();
+        this.aiExcuteNode = new cc.Node;
+        this.node.addChild( this.aiExcuteNode );
         this.aiExcute();
     },
 
@@ -20,6 +24,7 @@ cc.Class({
         this.maxHp = monsterData["HP"];
         this.dmg = monsterData["damage"];
         this.aiId = monsterData["AI"];
+        this.speed = monsterData["speed"];
         this.monsterId = monsterId;
         this.monsterIdx = monsterIdx;
     },
@@ -42,6 +47,35 @@ cc.Class({
             }
         });
         var seq = cc.sequence( delay, excuteCb );
-        this.node.runAction( cc.repeatForever( seq ) );
+        seq.setTag( AIACTTAG )
+        this.aiExcuteNode.runAction( cc.repeatForever( seq ) );
+        this.aiPause();
+    },
+
+    aiPause: function() {
+        cc.director.getActionManager().pauseTarget( this.aiExcuteNode );
+    },
+
+    aiResume: function() {
+        cc.director.getActionManager().resumeTarget( this.aiExcuteNode );
+    },
+
+    getHit: function ( num ) {
+        this._super();
+        if (this.hp <= 0) {
+            this.node.removeComponent(cc.PolygonCollider);
+            this.death();
+            if (this.node.getComponent("CircleComponent")) {
+                this.node.getComponent("CircleComponent").isExcute = false;
+            }
+            this.node.runAction( cc.sequence(
+                cc.delayTime(0.5),
+                cc.callFunc((node) => {
+                    this.lifeState = false;
+                    node.stopAllActions();
+                    node.dispatchEvent( new cc.Event.EventCustom('EnemyDeathCb', true) );
+                })
+            ) );
+        }
     }
 });

@@ -10,10 +10,6 @@ cc.Class({
     onLoad () {
         this._super();
 
-        this.a = {};
-        this.a["item1"] = {0:"是我"};
-        this.a["item2"] = {0:"是你"};
-
         this.init()
     },
  
@@ -73,6 +69,12 @@ btnFireGridsCb: function (event, eventData) {
     }
 },
 
+btnGameBeginCb: function (event, eventData) {
+    event.target.opacity = 0;
+    event.target.getComponent(cc.Button).onDisable();
+    this.node.emit("btnGameBeginCb");
+},
+
 btnFireGridsBeginCb: function (event, eventData) {
     this.node.emit("btnFireGridsBeginCb");
 },
@@ -103,47 +105,5 @@ btnFireCircleCb: function (event, eventData) {
         })
     ) );
 },
-
-btnBulletCbLv1: function (event, eventData) {
-
-    this.node.emit(eventData, 0);
-
-    this.btn3.onDisable();
-
-    this.node.runAction( cc.sequence(
-        cc.delayTime(1),
-        cc.callFunc((node) => {
-            this.btn3.onEnable();
-        })
-    ) );
-},
-
-btnBulletCbLv2: function (event, eventData) {
-
-    this.node.emit(eventData, 0);
-
-    this.btn4.onDisable();
-
-    this.node.runAction( cc.sequence(
-        cc.delayTime(1),
-        cc.callFunc((node) => {
-            this.btn4.onEnable();
-        })
-    ) );
-},
-
-btnBulletCbLv3: function (event, eventData) {
-
-    this.node.emit(eventData, 0);
-
-    this.btn5.onDisable();
-
-    this.node.runAction( cc.sequence(
-        cc.delayTime(1),
-        cc.callFunc((node) => {
-            this.btn5.onEnable();
-        })
-    ) );
-}
 
 });

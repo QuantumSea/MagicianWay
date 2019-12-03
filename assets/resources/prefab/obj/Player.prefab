@@ -452,6 +452,9 @@
       "__id__": 3
     },
     "roleKey": "default",
+    "dmgPrefab": {
+      "__uuid__": "6c11c688-4230-4371-9c01-b53cc10b7ac5"
+    },
     "_id": ""
   },
   {

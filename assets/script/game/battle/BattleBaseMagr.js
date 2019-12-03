@@ -103,7 +103,7 @@ cc.Class({
     },
 
     init () {
-
+        Game.Data.Player.checkPoint = 9;
         var guanqiaData = DB.getTableDataForKey( DB.GuanQiaVo, Game.Data.Player.checkPoint );
         this.checkPointData = {
             checkPointIdx:          Game.Data.Player.checkPoint,
@@ -115,6 +115,7 @@ cc.Class({
             itemPrice:              guanqiaData["price"],
             skillPackId:            guanqiaData["skillpackid"],
             monsterPackId:          [guanqiaData["monpackid1"], guanqiaData["monpackid2"], guanqiaData["monpackid3"]],
+            monsterPackIdx:         0,
             playerPackId:           guanqiaData["zhujuepack"],
         };
 
@@ -240,58 +241,55 @@ cc.Class({
         let enemyAng = ang;
         let monsterCountIdx = 0;
 
-        for (let cIndex = 0; cIndex < this.checkPointData.monsterPackId.length; cIndex++) {
-            if ( Number(this.checkPointData.monsterPackId[cIndex]) > 0 ) {
-                let mPackId = Number(this.checkPointData.monsterPackId[cIndex])
-                let monsterPackData = DB.getTableDataForKey( DB.MonPackVo, mPackId );
-                for (let index = 0; index < 10; index++) {
-                    let monsterId = monsterPackData["mon"+(index+1)]
-                    if ( Number( monsterId ) > 0 ) {
-                        let monsterData = DB.getTableDataForKey( DB.MonsterVo, monsterId );
-                        if (this.EnemyList[monsterCountIdx]) {
-                            if (monsterCountIdx+"enemy"+monsterId == this.EnemyList[monsterCountIdx].roleKey) {
-                                this.EnemyList[monsterCountIdx].getComponent("EnemyComponent").roleKey = monsterCountIdx+"enemy"+monsterId;
-                                this.EnemyList[monsterCountIdx].getComponent("EnemyComponent").monsterIdx = monsterCountIdx;
-                                this.EnemyList[monsterCountIdx].getComponent("EnemyComponent").setAnimation( this.ResSpineList[Number(monsterData["moxing"])] );
-                                return
-                            } else {
-                                Engine.GameLogs.log(monsterCountIdx + "敌人角色ID没有更换" + monsterId);
-                                return
-                            }
-                        }
-                        let roleobj = cc.instantiate( this.enemyPrefab );
-                        if ( roleobj.getComponent("EnemyComponent") ) {
-                            roleobj.getComponent("EnemyComponent").roleKey = monsterCountIdx+"enemy"+monsterId;
-                            roleobj.getComponent("EnemyComponent").initData( monsterData, monsterId, monsterCountIdx );
-                            roleobj.getComponent("EnemyComponent").setGroup( "arr_enemy" );
-                            roleobj.getComponent("EnemyComponent").setAnimation( this.ResSpineList[Number(monsterData["moxing"])] );
-                            roleobj.getComponent("EnemyComponent").setSkin( "gun3" );
-                        }
-                        if ( roleobj.getComponent("CircleComponent") ) {
-                            roleobj.getComponent("CircleComponent").angle = enemyAng;
-                            enemyAng = enemyAng + 15;
-                            if (enemyAng >= 360) {
-                                enemyAng = enemyAng - 360;
-                            }      
-                        }
-                        
-                        this.roleLayoutPtr.addChild( roleobj );
-                        this.EnemyList.push(roleobj);
-                        monsterCountIdx = monsterCountIdx + 1;
-        
-                        roleobj.getComponent("EnemyComponent").idle();
-                    } else {
-                        //判断此角色是否多余
-                        if (this.EnemyList[monsterCountIdx]) {
-                            Engine.GameLogs.log(monsterCountIdx + "敌人多余" + monsterId);
-                            this.EnemyList[monsterCountIdx].destroy();
-                            this.EnemyList.splice(monsterCountIdx,1);
+        if ( Number(this.checkPointData.monsterPackId[this.checkPointData.monsterPackIdx]) > 0 ) {
+            let mPackId = Number(this.checkPointData.monsterPackId[this.checkPointData.monsterPackIdx])
+            let monsterPackData = DB.getTableDataForKey( DB.MonPackVo, mPackId );
+            for (let index = 0; index < 10; index++) {
+                let monsterId = monsterPackData["mon"+(index+1)]
+                if ( Number( monsterId ) > 0 ) {
+                    let monsterData = DB.getTableDataForKey( DB.MonsterVo, monsterId );
+                    if (this.EnemyList[monsterCountIdx]) {
+                        if (monsterCountIdx+"enemy"+monsterId == this.EnemyList[monsterCountIdx].roleKey) {
+                            this.EnemyList[monsterCountIdx].getComponent("EnemyComponent").roleKey = monsterCountIdx+"enemy"+monsterId;
+                            this.EnemyList[monsterCountIdx].getComponent("EnemyComponent").monsterIdx = monsterCountIdx;
+                            this.EnemyList[monsterCountIdx].getComponent("EnemyComponent").setAnimation( this.ResSpineList[Number(monsterData["moxing"])] );
+                            return
+                        } else {
+                            Engine.GameLogs.log(monsterCountIdx + "敌人角色ID没有更换" + monsterId);
+                            return
                         }
                     }
-                }  
-            }
+                    let roleobj = cc.instantiate( this.enemyPrefab );
+                    if ( roleobj.getComponent("EnemyComponent") ) {
+                        roleobj.getComponent("EnemyComponent").roleKey = monsterCountIdx+"enemy"+monsterId;
+                        roleobj.getComponent("EnemyComponent").initData( monsterData, monsterId, monsterCountIdx );
+                        roleobj.getComponent("EnemyComponent").setGroup( "arr_enemy" );
+                        roleobj.getComponent("EnemyComponent").setAnimation( this.ResSpineList[Number(monsterData["moxing"])] );
+                        roleobj.getComponent("EnemyComponent").setSkin( "gun3" );
+                    }
+                    if ( roleobj.getComponent("CircleComponent") ) {
+                        roleobj.getComponent("CircleComponent").angle = enemyAng;
+                        enemyAng = enemyAng + 15;
+                        if (enemyAng >= 360) {
+                            enemyAng = enemyAng - 360;
+                        }      
+                    }
+                    
+                    this.roleLayoutPtr.addChild( roleobj );
+                    this.EnemyList.push(roleobj);
+                    monsterCountIdx = monsterCountIdx + 1;
+    
+                    roleobj.getComponent("EnemyComponent").idle();
+                } else {
+                    //判断此角色是否多余
+                    if (this.EnemyList[monsterCountIdx]) {
+                        Engine.GameLogs.log(monsterCountIdx + "敌人多余" + monsterId);
+                        this.EnemyList[monsterCountIdx].destroy();
+                        this.EnemyList.splice(monsterCountIdx,1);
+                    }
+                }
+            }  
         }
-        
 
     },
 
@@ -306,7 +304,32 @@ cc.Class({
                 node.destroy();
                 this.EnemyList.splice(idx,1)
                 if (this.EnemyList.length == 0) {
-                    this.nextLvLogic();
+                    this.checkPointData.monsterPackIdx = this.checkPointData.monsterPackIdx + 1;
+                    if (this.checkPointData.monsterPackIdx >= 3) {
+                        this.nextLvLogic();
+                    } else {
+                        this.nextMonsterLogic();
+                    }
+                }
+            })
+        ) );
+    },
+
+    playerDeath: function ( obj, idx ) {
+        obj.runAction( cc.sequence(
+            cc.fadeOut(2),
+            cc.callFunc((node) => {
+                node.destroy();
+                this.PlayerList.splice(idx,1)
+                if (this.PlayerList.length == 0) {
+                    Engine.GameLogs.log("关卡失败");
+                    this.EnemyList.forEach((enemy, idx) => {
+                        if (enemy.getComponent("EnemyComponent").lifeState == true) {
+                            enemy.getComponent("EnemyComponent").idle();
+                            enemy.getComponent("CircleComponent").isExcute = false;
+                            enemy.getComponent("EnemyComponent").aiPause();
+                        }
+                    });
                 }
             })
         ) );
@@ -358,9 +381,9 @@ cc.Class({
         this.node.on('btnUpdateGridsCb', function ( ) {
             this.btnUpdateGridsLogic( );
         }, this);
-        // this.node.on('btnFireGridsCb', function ( ) {
-        //     this.btnFireLogic( );
-        // }, this);
+        this.node.on('btnGameBeginCb', function ( ) {
+            this.btnGameBegin( );
+        }, this);
         this.node.on('btnFireGridsBeginCb', function ( ) {
             this.btnFireLogic( 1 );
         }, this);
@@ -382,6 +405,11 @@ cc.Class({
             event.stopPropagation();
             this.enemyDeathLogic();
         }, this);
+        this.node.on('PlayerDeathCb', function ( event ) {
+            Engine.GameLogs.log( "玩家死亡" );
+            event.stopPropagation();
+            this.playerDeathLogic();
+        }, this);
         this.node.on('EnemyAttackCb', function ( event ) {
             event.stopPropagation();
             this.enemyAttackLogic( event.target );
@@ -400,14 +428,24 @@ cc.Class({
         });
     },
 
+    playerDeathLogic: function () {
+        this.PlayerList.forEach((player, idx) => {
+            if (player.getComponent("PlayerComponent").lifeState == false) {
+                this.playerDeath( player, idx );
+            }
+        });
+    },
+
     enemyAttackLogic: function ( enemyNode ) {
         if ( enemyNode.getComponent("EnemyComponent") ) {
             var aiData = DB.getTableDataForKey( DB.AiVo, enemyNode.getComponent("EnemyComponent").aiId );
             var aiTarget = aiData["mubiao"];
-            var playerIdx = aiTarget - 1; //临时
+            var playerIdx = aiTarget;
             if (this.PlayerList[playerIdx]) {
-                var enemyDmg = enemyNode.getComponent("EnemyComponent").dmg;
-                this.PlayerList[playerIdx].getComponent("PlayerComponent").getHit( enemyDmg );
+                if (this.PlayerList[playerIdx].getComponent("PlayerComponent").lifeState == true) {
+                    var enemyDmg = enemyNode.getComponent("EnemyComponent").dmg;
+                    this.PlayerList[playerIdx].getComponent("PlayerComponent").getHit( Number( enemyDmg ) );
+                }   
             }
             // Engine.GameLogs.log( enemyNode.getComponent("EnemyComponent").monsterIdx + "位敌人攻击目标" + aiTarget );
         }
@@ -416,12 +454,33 @@ cc.Class({
     playerHit: function () {
 
     },
-
+    //下一关
     nextLvLogic: function () {
         Game.Data.Player.checkPoint = Game.Data.Player.checkPoint + 1;
         cc.sys.localStorage.setItem('userData', JSON.stringify( Game.Data.Player ));
         Engine.GameLogs.log( "准备下一关" );
         this.init();
+    },
+    //下一波怪物
+    nextMonsterLogic: function () {
+        Engine.GameLogs.log( "第" + this.checkPointData.monsterPackIdx + "波怪物" );
+        this.enemyBorn();
+    },
+
+    btnGameBegin: function ( ) {
+        this.PlayerList.forEach((player, idx) => {
+            if (player.getComponent("PlayerComponent").lifeState == true) {
+                player.getComponent("PlayerComponent").run();
+                player.getComponent("CircleComponent").isExcute = true;
+            }
+        });
+        this.EnemyList.forEach((enemy, idx) => {
+            if (enemy.getComponent("EnemyComponent").lifeState == true) {
+                enemy.getComponent("EnemyComponent").run();
+                enemy.getComponent("CircleComponent").isExcute = true;
+                enemy.getComponent("EnemyComponent").aiResume();
+            }
+        });
     },
 
     btnUpdateGridsLogic: function ( ) {

@@ -8,6 +8,11 @@ cc.Class({
             default: "default",
             tooltip: "角色Key值",
         },
+        dmgPrefab:{
+            type:cc.Prefab,
+            default:null,
+            tooltip: "伤害数字",
+        },
     },
     
     ctor: function () {
@@ -15,6 +20,8 @@ cc.Class({
         this.hp = 0;
         this.speed = 1;
         this.lifeState = true;
+        this.initDmgFontPosY = 300;
+        this.dmgFontList = [];
     },
 
     onLoad: function  () {
@@ -27,6 +34,7 @@ cc.Class({
     initData: function ( roleData ) {
         this.hp = roleData["HP"];
         this.maxHp = roleData["HP"];
+        this.speed = roleData["speed"];
     },
 
 /**
@@ -66,6 +74,19 @@ cc.Class({
         } 
     },
 
+    death: function () {
+        if (this.roleAniNode) {
+            this.roleAniNode.setAnimation( 0, "die2", true );
+        } 
+    },
+
+    hit: function () {
+        // if (this.roleAniNode) {
+        //     this.roleAniNode.setAnimation( 0, "die1", false );
+        //     this.roleAniNode.addAnimation( 0, "idle", true );
+        // }   
+    },
+
     jump: function () {
         if (this.jumpState == 1) {
             Engine.GameLogs.log("Jumping!");
@@ -77,29 +98,32 @@ cc.Class({
     },
 
     hpChange: function ( num ) {
-        var lbNode = new cc.Node();
-        lbNode.setPosition( cc.v2( -84,259 ) );
-        lbNode.addComponent(cc.Label);
-        lbNode.getComponent(cc.Label).string = "-" + num;
-        lbNode.getComponent(cc.Label).fontSize = 60;
-        lbNode.getComponent(cc.Label).lineHeight = 60;
-        lbNode.color = new cc.color(236,65,14);
-
-        this.node.addChild( lbNode );
-
-        var delayStart = cc.delayTime(0.1);
-        var scaleTo = cc.scaleTo(0.1, 1.0, 1.0);
+        var dmgFont = cc.instantiate( this.dmgPrefab );
+        dmgFont.setPosition( cc.v2( 0, this.initDmgFontPosY ) );
+        dmgFont.getComponent(cc.Label).string = "-" + num;
+        var scaleTo = cc.scaleTo(0.1, 1.2, 1.2);
         var scaleTo1 = cc.scaleTo(0.1, 1.0, 1.0);
-        var dCallFunc = cc.callFunc((lbNode) => {
-                    lbNode.destroy();
-                });
-        var scaleSeq = cc.sequence( delayStart, scaleTo, scaleTo1, cc.fadeTo(1), dCallFunc );
-        var moveUp = cc.moveTo(0.5, cc.v2( -114, 309));
-        var spawn = cc.spawn(moveUp, scaleSeq);
-        lbNode.runAction( spawn );
+        dmgFont.runAction( cc.sequence( scaleTo, scaleTo1, cc.delayTime(0.5), cc.callFunc((prefabNode) => {
+            prefabNode.destroy();
+        }) ) )
+        this.node.addChild( dmgFont );
+        this.dmgFontList.push( dmgFont );
+        if (this.dmgFontList.length >= 2) {
+            this.dmgFontList.forEach((obj, idx) => {
+                if (idx < this.dmgFontList.length - 1 ) {
+                    if (cc.isValid(obj)==true) {
+                        obj.y = this.initDmgFontPosY + 80*(this.dmgFontList.length-1-idx);
+                    } else {
+                        this.dmgFontList.splice(idx,1)
+                    }
+                }
+            });
+        }
     },
 
     getHit: function ( num ) {
+        num = num*2
+        this.hit();
         this.hp = this.hp - num;
         this.progressBar.progress = this.hp/this.maxHp;
         this.hpChange( num );
