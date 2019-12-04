@@ -93,17 +93,16 @@ cc.Class({
 
     onLoad () {
 
-        var manager = cc.director.getCollisionManager();
-        manager.enabled = true;
-        manager.enabledDebugDraw = true;
-        manager.enabledDrawBoundingBox = true;
+        // var manager = cc.director.getCollisionManager();
+        // manager.enabled = true;
+        // manager.enabledDebugDraw = true;
+        // manager.enabledDrawBoundingBox = true;
 
         this.loadRes();
-
     },
 
     init () {
-        Game.Data.Player.checkPoint = 9;
+        Game.Data.Player.checkPoint = 1;
         var guanqiaData = DB.getTableDataForKey( DB.GuanQiaVo, Game.Data.Player.checkPoint );
         this.checkPointData = {
             checkPointIdx:          Game.Data.Player.checkPoint,
@@ -150,14 +149,14 @@ cc.Class({
             self.uiLayoutPtr.addChild( self.itemPoolObj );   
         }
 
-        var emptyGrids = this.itemPoolObj.getComponent('ItemPoolComponent').queryEmptyGridsNum();
+        /*var emptyGrids = this.itemPoolObj.getComponent('ItemPoolComponent').queryEmptyGridsNum();
         if (emptyGrids.length == 15) {
             let gridDatas = [];
             if (Game.Data.Player.itemList.length > 0) {
                 gridDatas = [...Game.Data.Player.itemList];
             }
             self.updateGridPool( gridDatas );
-        }
+        }*/
 
         this.checkPointLb = this.rootLayoutPtr.getChildByName("CheckPointLb");
         this.checkPointLb.getComponent(cc.Label).string = "第" + this.checkPointData.checkPointIdx + "关";
@@ -256,6 +255,15 @@ cc.Class({
                             return
                         } else {
                             Engine.GameLogs.log(monsterCountIdx + "敌人角色ID没有更换" + monsterId);
+                            this.EnemyList[monsterCountIdx].getComponent("EnemyComponent").onLoad();
+                            if ( this.EnemyList[monsterCountIdx].getComponent("CircleComponent") ) {
+                                this.EnemyList[monsterCountIdx].getComponent("CircleComponent").angle = enemyAng;
+                                this.EnemyList[monsterCountIdx].getComponent("CircleComponent").onLoad();
+                                enemyAng = enemyAng + 15;
+                                if (enemyAng >= 360) {
+                                    enemyAng = enemyAng - 360;
+                                }
+                            }
                             return
                         }
                     }
@@ -316,19 +324,27 @@ cc.Class({
     },
 
     playerDeath: function ( obj, idx ) {
+        Engine.GameLogs.log("关卡失败");
         obj.runAction( cc.sequence(
+            cc.callFunc((node) => {
+                if (this.itemPoolObj) {
+                    this.itemPoolObj.getComponent("ItemPoolComponent").aiStop();
+                }
+                this.EnemyList.forEach((enemy, idx) => {
+                    if (enemy.getComponent("EnemyComponent").lifeState == true) {
+                        enemy.getComponent("EnemyComponent").idle();
+                        enemy.getComponent("CircleComponent").isExcute = false;
+                        enemy.getComponent("EnemyComponent").aiPause();
+                    }
+                });
+            }),
             cc.fadeOut(2),
             cc.callFunc((node) => {
                 node.destroy();
                 this.PlayerList.splice(idx,1)
                 if (this.PlayerList.length == 0) {
-                    Engine.GameLogs.log("关卡失败");
-                    this.EnemyList.forEach((enemy, idx) => {
-                        if (enemy.getComponent("EnemyComponent").lifeState == true) {
-                            enemy.getComponent("EnemyComponent").idle();
-                            enemy.getComponent("CircleComponent").isExcute = false;
-                            enemy.getComponent("EnemyComponent").aiPause();
-                        }
+                    Engine.GameUtils.loadPrefabFile( "prefab/window/FailedView", (window) => {
+                        this.node.getComponent("UiPoolComponent").pushUI( window )
                     });
                 }
             })
@@ -418,6 +434,13 @@ cc.Class({
             event.stopPropagation();
             this.shakeLogic();
         }, this);
+        this.node.on('GuanQiaRefresh', function ( event ) {
+            event.stopPropagation();
+            Engine.GameLogs.log( "第" + this.checkPointData.checkPointIdx + "关重新开始" );
+            this.playerBorn();
+            this.enemyBorn();
+            this.itemPoolObj.getComponent("ItemPoolComponent").clearAllGrids();
+        }, this);
     },
 
     enemyDeathLogic: function () {
@@ -481,6 +504,9 @@ cc.Class({
                 enemy.getComponent("EnemyComponent").aiResume();
             }
         });
+        if (this.itemPoolObj) {
+            this.itemPoolObj.getComponent("ItemPoolComponent").paddingGridsPool();
+        }
     },
 
     btnUpdateGridsLogic: function ( ) {

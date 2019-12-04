@@ -44,6 +44,10 @@ cc.Class({
     init: function () {
     },
 
+    windowDestroy: function () {
+        this.node.destroy();
+    },
+
 /**
  * 逻辑代码
  * @param setStopPropagation 设置事件拦截状态

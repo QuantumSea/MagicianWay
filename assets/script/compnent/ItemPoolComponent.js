@@ -1,4 +1,6 @@
 
+var AIACTTAG = 1000
+
 cc.Class({
     extends: Engine.GameBaseWindow,
 
@@ -15,6 +17,8 @@ cc.Class({
     },
 
     onLoad: function  () {
+        this.aiExcuteNode = new cc.Node;
+        this.node.addChild( this.aiExcuteNode );
         this.itemAtlas = null;
         this.eventRegister();
         for (let index = 0; index < 15; index++) {
@@ -55,7 +59,54 @@ cc.Class({
  * @param checkGridCompose 检测格子合成
  * @param clearGrid 清空一个格子
  * @param queryEmptyGridsNum 查询空的格子
+ * @param paddingGridsPool 填充格子
  */
+
+    aiPause: function() {
+        cc.director.getActionManager().pauseTarget( this.aiExcuteNode );
+    },
+
+    aiResume: function() {
+        cc.director.getActionManager().resumeTarget( this.aiExcuteNode );
+    },
+
+    aiStop: function() {
+        this.aiExcuteNode.stopAllActions();
+    },
+
+    paddingGridsPool: function( ) {
+        var guanqiaData = DB.getTableDataForKey( DB.GuanQiaVo, Game.Data.Player.checkPoint );
+        var guanqiaSkillPackId = guanqiaData["skillpackid"];
+        var skillPackData = DB.getTableDataForKey( DB.SkillPackVo, guanqiaSkillPackId );
+
+        var delay = cc.delayTime( 3 );
+        var excuteCb = cc.callFunc((node) => {
+            var guanqiaNub = guanqiaData["nub" + Engine.GameUtils.getRandomNum( 1, 2 )];
+            let emptyGrids = this.queryEmptyGridsNum();
+            if (emptyGrids.length <= 0) {
+                Engine.GameLogs.log("暂无空格子");
+                return;
+            }
+            let gridDatas = [];
+            let skillList = [];
+            for (let index = 0; index < 15; index++) {
+                let skillId = skillPackData["skill"+(index+1)];
+                let skillWeight = skillPackData["jilv"+(index+1)];
+                skillList.push( { id:skillId, weight:skillWeight } );
+            }
+            let updateNum = emptyGrids.length>guanqiaNub?guanqiaNub:emptyGrids.length;
+            for (let index = 0; index < updateNum; index++) {
+                let randomSkillId = Engine.GameUtils.getWeightRandomNum(0, skillList);
+                let emptyGridIdx = emptyGrids[index];
+                gridDatas[emptyGridIdx] = randomSkillId;
+            }
+            Engine.GameLogs.log("刷格子啦" + String( gridDatas ));
+            this.initGrids( gridDatas );
+        });
+        var seq = cc.sequence( excuteCb, delay );
+        seq.setTag( AIACTTAG )
+        this.aiExcuteNode.runAction( cc.repeatForever( seq ) );
+    },
 
     clearGrid: function( gridIndex ) {
         if (this.gridPool["grid"+gridIndex]) {
@@ -67,6 +118,13 @@ cc.Class({
             }
             Game.Data.Player.updateItem( this.gridPool["grid"+gridIndex].gridItemIdx, gridIndex );
             cc.sys.localStorage.setItem('userData', JSON.stringify( Game.Data.Player ));
+        }
+    },
+
+    clearAllGrids: function() {
+        for (var key in this.gridPool) {
+            const element = this.gridPool[key];
+            this.clearGrid( element.gridIdx );
         }
     },
 
@@ -89,6 +147,7 @@ cc.Class({
             if (this.gridPool["grid"+gridIndex].gridObJ == null) {
                 let cloneItem = cc.instantiate( this.gridPrefab );
                 cloneItem.setPosition( this.gridPool["grid"+gridIndex].gridPos );
+                cloneItem.runAction(cc.sequence(cc.scaleTo(0.1,1.2,1.2),cc.scaleTo(0.1,1.0,1.0)))
                 this.node.addChild( cloneItem );
                 this.gridPool["grid"+gridIndex].gridObJ = cloneItem; 
             };

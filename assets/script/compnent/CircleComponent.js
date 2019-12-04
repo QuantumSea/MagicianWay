@@ -143,7 +143,6 @@ cc.Class({
 
     update (dt) {
         if (this.isExcute == true) {
-            this.step = 0.5;
             this.angle = this.angle - this.step;
             if (this.angle > 360) {
                 this.angle = 0;

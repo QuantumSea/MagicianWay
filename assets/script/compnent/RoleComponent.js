@@ -26,6 +26,7 @@ cc.Class({
 
     onLoad: function  () {
         this.behaviorComp = this.node.getComponent("CircleComponent");
+        this.behaviorComp.step = this.speed;
         this.collider = this.node.getComponent(cc.PolygonCollider);
         this.progressBar = this.node.getChildByName('hpProgressBar').getComponent(cc.ProgressBar);
         this.progressBar.progress = this.hp/this.maxHp;
@@ -36,6 +37,7 @@ cc.Class({
         this.maxHp = roleData["HP"];
         this.speed = roleData["speed"];
     },
+    
 
 /**
  * 逻辑代码
@@ -122,7 +124,7 @@ cc.Class({
     },
 
     getHit: function ( num ) {
-        num = num*2
+        num = num*20;
         this.hit();
         this.hp = this.hp - num;
         this.progressBar.progress = this.hp/this.maxHp;

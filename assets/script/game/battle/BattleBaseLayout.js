@@ -5,11 +5,11 @@ cc.Class({
     properties: {
         btnUpdate: cc.Button,
         btnFire: cc.Button,
+        btnBegin: cc.Button,
     },
 
     onLoad () {
         this._super();
-
         this.init()
     },
  
@@ -19,6 +19,12 @@ cc.Class({
         this.btnFire.node.on( cc.Node.EventType.TOUCH_MOVE, this.btnFireGridsMoveCb.bind( this ));
         this.btnFire.node.on( cc.Node.EventType.TOUCH_END, this.btnFireGridsEndCb.bind( this ));
         this.btnFire.node.on( cc.Node.EventType.TOUCH_CANCEL, this.btnFireGridsCancelCb.bind( this ));
+
+        this.node.on('GuanQiaRefresh', function ( event ) {
+            event.stopPropagation();
+            this.btnBegin.node.opacity = 255;
+            this.btnBegin.onEnable();
+        }, this);
     },
 
     start () {
@@ -70,8 +76,8 @@ btnFireGridsCb: function (event, eventData) {
 },
 
 btnGameBeginCb: function (event, eventData) {
-    event.target.opacity = 0;
-    event.target.getComponent(cc.Button).onDisable();
+    this.btnBegin.node.opacity = 0;
+    this.btnBegin.onDisable();
     this.node.emit("btnGameBeginCb");
 },
 
