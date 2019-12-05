@@ -60,6 +60,8 @@ cc.Class({
  * @param clearGrid 清空一个格子
  * @param queryEmptyGridsNum 查询空的格子
  * @param paddingGridsPool 填充格子
+ * @param checkAutomaticCarry 检测是否可以自动进位  
+ * @param gridAutomaticCarry 格子自动进位  
  */
 
     aiPause: function() {
@@ -100,7 +102,7 @@ cc.Class({
                 let emptyGridIdx = emptyGrids[index];
                 gridDatas[emptyGridIdx] = randomSkillId;
             }
-            Engine.GameLogs.log("刷格子啦" + String( gridDatas ));
+            Engine.GameLogs.log("开始刷格子啦" + String( gridDatas ));
             this.initGrids( gridDatas );
         });
         var seq = cc.sequence( excuteCb, delay );
@@ -219,7 +221,8 @@ cc.Class({
             if (this.gridPool["grid"+targetIndex].gridItemLvIdx > 0) {
                 Engine.GameLogs.log( "可合成 ItemId = " + this.gridPool["grid"+targetIndex].gridItemIdx );
                 this.clearGrid( sourceIndex );
-                this.updateGrid( targetIndex, this.gridPool["grid"+targetIndex].gridItemLvIdx );           
+                this.updateGrid( targetIndex, this.gridPool["grid"+targetIndex].gridItemLvIdx ); 
+                this.checkAutomaticCarry();          
             } else {
                 Engine.GameLogs.log( "无法继续合成了" );
                 this.gridPool["grid"+sourceIndex].gridObJ.getComponent('GridComponent').backPoint();
@@ -227,9 +230,21 @@ cc.Class({
         } else {
             
             if (this.gridPool["grid"+targetIndex].gridState == 0) {
-                Engine.GameLogs.log( "不可合成,替换空位" );
-                this.updateGrid( targetIndex, this.gridPool["grid"+sourceIndex].gridItemIdx );
-                this.clearGrid( sourceIndex );
+
+                if (this.gridPool["grid"+sourceIndex].gridLockState == 0) {
+                    if (this.gridPool["grid"+targetIndex].gridLockState == 0) {
+                        Engine.GameLogs.log( "不可合成,返回原位" );
+                        this.gridPool["grid"+sourceIndex].gridObJ.getComponent('GridComponent').backPoint();
+                    } else {
+                        Engine.GameLogs.log( "目标位为锁定位，替换空位" );
+                        this.updateGrid( targetIndex, this.gridPool["grid"+sourceIndex].gridItemIdx );
+                        this.clearGrid( sourceIndex );
+                    }
+                } else {
+                    Engine.GameLogs.log( "移动位为锁定位,可以替换空位：" + this.queryLastEmptyGridsNum() );
+                    this.updateGrid( this.queryLastEmptyGridsNum()==-1?0:this.queryLastEmptyGridsNum(), this.gridPool["grid"+sourceIndex].gridItemIdx );
+                    this.clearGrid( sourceIndex ); 
+                }
             } else {
                 Engine.GameLogs.log( "不可合成,互换位置" );
                 let tarGirdItemIdx = this.gridPool["grid"+targetIndex].gridItemIdx;
@@ -247,7 +262,8 @@ cc.Class({
             if (this.gridPool["grid"+idx].gridState == 1 && this.gridPool["grid"+idx].gridLockState == 0) {
                 Engine.GameLogs.log("格子"+idx+"消耗");
                 let skillIdx = this.gridPool["grid"+idx].gridItemIdx;
-                this.clearGrid( idx )
+                this.clearGrid( idx );
+                this.checkAutomaticCarry();
                 return skillIdx;
             };
         }
@@ -265,6 +281,58 @@ cc.Class({
 
         return emptyGridList;
     },
+
+    queryLastEmptyGridsNum: function () {
+        var lastEmptyIdx = -1;
+        for (let idx = 9; idx >= 0; idx--) {
+            if (this.gridPool["grid"+idx].gridState == 1) {
+                lastEmptyIdx = idx + 1;
+                if (lastEmptyIdx > 9) {
+                    lastEmptyIdx = 9;
+                }
+                break;
+            };
+        }
+        return lastEmptyIdx
+    },
+
+    checkAutomaticCarry: function () {
+        var autoCarryGridBeginIdx = -1;
+        var autoCarryGridEndIdx = this.queryLastEmptyGridsNum();
+        if (autoCarryGridEndIdx==-1) {
+            Engine.GameLogs.log("没有发现技能");
+            return;
+        }
+        for (var key in this.gridPool) {
+            if (this.gridPool[key].gridLockState == 0) {
+                if (this.gridPool[key].gridState == 0) {
+                    const element = this.gridPool[key];
+                    let emptyGridIdx = element.gridIdx;
+                    autoCarryGridBeginIdx = emptyGridIdx + 1;
+                    autoCarryGridBeginIdx = autoCarryGridBeginIdx > 9?9:autoCarryGridBeginIdx;
+                    break;
+                }
+            }
+        }
+
+        if (autoCarryGridBeginIdx>0) {
+            Engine.GameLogs.log("从格子" + autoCarryGridBeginIdx + "开始进位至" + autoCarryGridEndIdx);
+            this.gridAutomaticCarry( autoCarryGridBeginIdx, autoCarryGridEndIdx );   
+        }
+    },
+
+    gridAutomaticCarry: function ( beginGridIdx, endGirdIdx ) {
+        for (let index = beginGridIdx; index <= endGirdIdx; index++) {
+            let newGridIdx = index - 1;
+            if (index == endGirdIdx) {
+                this.updateGrid( newGridIdx, this.gridPool["grid"+index].gridItemIdx );
+                this.clearGrid( endGirdIdx );
+            } else {
+                this.updateGrid( newGridIdx, this.gridPool["grid"+index].gridItemIdx );
+            }
+        }
+    },
+
 
     /**
      * 事件代码

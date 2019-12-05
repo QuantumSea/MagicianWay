@@ -124,7 +124,6 @@ cc.Class({
     },
 
     getHit: function ( num ) {
-        num = num*20;
         this.hit();
         this.hp = this.hp - num;
         this.progressBar.progress = this.hp/this.maxHp;

@@ -149,14 +149,14 @@ cc.Class({
             self.uiLayoutPtr.addChild( self.itemPoolObj );   
         }
 
-        /*var emptyGrids = this.itemPoolObj.getComponent('ItemPoolComponent').queryEmptyGridsNum();
-        if (emptyGrids.length == 15) {
-            let gridDatas = [];
-            if (Game.Data.Player.itemList.length > 0) {
-                gridDatas = [...Game.Data.Player.itemList];
-            }
-            self.updateGridPool( gridDatas );
-        }*/
+        // var emptyGrids = this.itemPoolObj.getComponent('ItemPoolComponent').queryEmptyGridsNum();
+        // if (emptyGrids.length == 15) {
+        //     let gridDatas = [];
+        //     if (Game.Data.Player.itemList.length > 0) {
+        //         gridDatas = [...Game.Data.Player.itemList];
+        //     }
+        //     self.updateGridPool( gridDatas );
+        // }
 
         this.checkPointLb = this.rootLayoutPtr.getChildByName("CheckPointLb");
         this.checkPointLb.getComponent(cc.Label).string = "第" + this.checkPointData.checkPointIdx + "关";
