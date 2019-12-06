@@ -258,17 +258,21 @@ cc.Class({
     },
 
     consumeGrid: function ( ) {
+        var cmd = [];
+        cmd[0] = -1;
+        cmd[1] = cc.v2(0,0);
         for (let idx = 0; idx < 10; idx++) {
             if (this.gridPool["grid"+idx].gridState == 1 && this.gridPool["grid"+idx].gridLockState == 0) {
                 Engine.GameLogs.log("格子"+idx+"消耗");
-                let skillIdx = this.gridPool["grid"+idx].gridItemIdx;
+                cmd[0] = this.gridPool["grid"+idx].gridItemIdx;
+                cmd[1] = this.gridPool["grid"+idx].gridObJ.convertToWorldSpaceAR(cc.v2(0, 0));
                 this.clearGrid( idx );
                 this.checkAutomaticCarry();
-                return skillIdx;
+                return cmd;
             };
         }
 
-        return -1;
+        return cmd;
     },
 
     queryEmptyGridsNum: function () {

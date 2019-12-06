@@ -120,6 +120,7 @@ cc.Class({
 
         
         this.initGuanQia();
+        this.parallelWorld = this.skillLayoutPtr.getChildByName("parallelWorld");
     },
  
     start () {
@@ -238,6 +239,7 @@ cc.Class({
         }
         let stepAng = 15;
         let enemyAng = ang;
+        // let enemyAng = 0;
         let monsterCountIdx = 0;
 
         if ( Number(this.checkPointData.monsterPackId[this.checkPointData.monsterPackIdx]) > 0 ) {
@@ -351,21 +353,23 @@ cc.Class({
         ) );
     },
 
-    skillBorn: function ( skillIdx ) {
+    skillBorn: function ( skillIdx, gridWorldPos ) {
         var self = this;
-        let skillobj = cc.instantiate( this.skillItemPrefab );
+        let skillobj = cc.instantiate( self.skillItemPrefab );
+        skillobj.x = gridWorldPos.x - self.parallelWorld.x;
+        skillobj.y = gridWorldPos.y - self.parallelWorld.y;
         let skillData = DB.getTableDataForKey( DB.SkillVo, skillIdx );
         if ( skillobj.getComponent("SkillItemComponent") ) {
             skillobj.getComponent("SkillItemComponent").initData( skillData );
             skillobj.getComponent("SkillItemComponent").setGroup( "arr_skill" );
-            let resName = "item"+skillData["moxing"];
-            skillobj.getComponent("SkillItemComponent").setSkillSpriteFrame( this.itemPoolObj.getComponent("ItemPoolComponent").itemAtlas.getSpriteFrame( resName ) );
+            let resName = "wu"+skillData["moxing"];
+            skillobj.getComponent("SkillItemComponent").setSkillSpriteFrame( self.itemPoolObj.getComponent("ItemPoolComponent").itemAtlas.getSpriteFrame( resName ) );
             if ( skillobj.getComponent("CircleComponent") ) {
-                skillobj.getComponent("CircleComponent").angle = 90 + (self.skillPosIdx * 10);
+                skillobj.removeComponent("CircleComponent");
             }
-            self.skillLayoutPtr.addChild( skillobj );
+            self.parallelWorld.addChild( skillobj );
+            skillobj.getComponent("SkillItemComponent").aiExcute();
         }
-        
     },
 
     updateGridPool: function ( gridDatas ) {
@@ -530,44 +534,35 @@ cc.Class({
     btnFireLogic: function ( touchType ) {
         let self = this;
         if (touchType == 1) {
-            this.skillPosIdx = 0;
-            if (this.node.getActionByTag(100)) {
-                this.skillPosIdx = 0;
-                this.node.stopActionByTag( 100 )   
-            }
+            // this.skillPosIdx = 0;
+            // if (this.node.getActionByTag(100)) {
+            //     this.skillPosIdx = 0;
+            //     this.node.stopActionByTag( 100 )   
+            // }
             let doLogic = function () {
-                let skillIdx = self.itemPoolObj.getComponent('ItemPoolComponent').consumeGrid();
+                let cmd = self.itemPoolObj.getComponent('ItemPoolComponent').consumeGrid();
+                let skillIdx = cmd[0];
+                let gridWorldPos = cmd[1];
                 if (skillIdx > 0) {
                     Engine.GameLogs.log("技能"+skillIdx+"发射");
-                    self.skillBorn( skillIdx );
                     self.PlayerList[0].getComponent("RoleComponent").attack();
-                    self.skillPosIdx = self.skillPosIdx + 1;
-                    if (self.node.getActionByTag(100)) {
-                        self.node.stopActionByTag( 100 )   
-                    }
-                    let act = cc.sequence(
-                        cc.delayTime(0.15),
-                        cc.callFunc((node) => {
-                            doLogic();
-                        })
-                    );
-                    act.setTag(100);
-                    self.node.runAction( act )
+                    self.parallelWorld.getComponent("ParallelWorldComponent").setTarget( self.EnemyList[0] );
+                    self.skillBorn( skillIdx, gridWorldPos );
                 } else {
-                    self.skillPosIdx = 0;
-                }   
+                    // self.skillPosIdx = 0;
+                }
             }
             doLogic();
         } else if ( touchType == 3 ) {
-            if (this.node.getActionByTag(100)) {
-                this.node.stopActionByTag( 100 )
-            }
-            this.skillPosIdx = 0;
+            // if (this.node.getActionByTag(100)) {
+            //     this.node.stopActionByTag( 100 )
+            // }
+            // this.skillPosIdx = 0;
         }else if ( touchType == 4 ) {
-            if (this.node.getActionByTag(100)) {
-                this.node.stopActionByTag( 100 )
-            }
-            this.skillPosIdx = 0;
+            // if (this.node.getActionByTag(100)) {
+            //     this.node.stopActionByTag( 100 )
+            // }
+            // this.skillPosIdx = 0;
         }
     },
 

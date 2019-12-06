@@ -128,6 +128,5 @@ cc.Class({
         this.hp = this.hp - num;
         this.progressBar.progress = this.hp/this.maxHp;
         this.hpChange( num );
-    }
-
+    },
 });

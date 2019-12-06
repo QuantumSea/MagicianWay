@@ -13,23 +13,13 @@ var Utils = {
     },
 
     getAngleByPts: function ( pt1, pt2 ) {
-        let disX = pt1.x - pt2.x;
-        let disY = pt1.y - pt2.y;
-        let at = Math.atan( disX / disY ) / Math.PI * 180;
+        let dirVec = pt2.sub(pt1);//获得从startPos指向endPos的方向向量
+        let comVec = new cc.Vec2(1, 0);//计算夹角的参考方向，这里选择x轴正方向
+        let radian = dirVec.signAngle(comVec);//获得带方向的夹角弧度值(参考方向顺时针为正值，逆时针为负值)
+        let degree = -90-(Math.floor(cc.misc.radiansToDegrees(radian))+90);
 
-        let getPtAngle = function ( ptS, ptT ) {
-            let vecTarget = ptT.sub(ptS);
-            if (vecTarget == null) {
-                return 0;
-            }
-            let ag = radiansToDegrees( vecTarget.angle( cc.v2( 1,0 ) ) );
+        return degree;
 
-            return ag;
-        };
-
-        let angle = getPtAngle( cc.v2( disX, disY ), pt1 );
-
-        return angle + 180;
     },
 
     /*
