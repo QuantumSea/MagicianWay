@@ -77,6 +77,10 @@ cc.Class({
     },
 
     paddingGridsPool: function( ) {
+        if ( this.aiExcuteNode.getActionByTag( AIACTTAG ) ) {
+            Engine.GameLogs.log("格子派发中...");
+            return;
+        }
         var guanqiaData = DB.getTableDataForKey( DB.GuanQiaVo, Game.Data.Player.checkPoint );
         var guanqiaSkillPackId = guanqiaData["skillpackid"];
         var skillPackData = DB.getTableDataForKey( DB.SkillPackVo, guanqiaSkillPackId );

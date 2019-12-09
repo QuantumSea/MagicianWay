@@ -61,10 +61,11 @@ cc.Class({
     },
 
     getHit: function ( num ) {
-        this._super();
+        this._super( num );
         if (this.hp <= 0) {
             this.node.removeComponent(cc.PolygonCollider);
             this.death();
+            this.aiPause();
             if (this.node.getComponent("CircleComponent")) {
                 this.node.getComponent("CircleComponent").isExcute = false;
             }

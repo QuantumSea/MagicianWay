@@ -31,13 +31,10 @@
       },
       {
         "__id__": 7
-      },
-      {
-        "__id__": 8
       }
     ],
     "_prefab": {
-      "__id__": 9
+      "__id__": 8
     },
     "_opacity": 255,
     "_color": {
@@ -204,28 +201,6 @@
     },
     "itemKey": "default",
     "angle": 0,
-    "_id": ""
-  },
-  {
-    "__type__": "8eb361Vqr1LZqO0CAOaRggR",
-    "_name": "",
-    "_objFlags": 0,
-    "node": {
-      "__id__": 1
-    },
-    "_enabled": true,
-    "excuteNode": {
-      "__id__": 1
-    },
-    "angle": 90,
-    "step": 1,
-    "centerPos": {
-      "__type__": "cc.Vec2",
-      "x": 320,
-      "y": 680
-    },
-    "circleRadius": 220,
-    "isExcute": false,
     "_id": ""
   },
   {

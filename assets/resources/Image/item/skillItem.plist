@@ -7,7 +7,7 @@
             <key>item1.png</key>
             <dict>
                 <key>frame</key>
-                <string>{{185,110},{51,52}}</string>
+                <string>{{185,108},{51,52}}</string>
                 <key>offset</key>
                 <string>{0,0}</string>
                 <key>rotated</key>
@@ -20,7 +20,7 @@
             <key>item2.png</key>
             <dict>
                 <key>frame</key>
-                <string>{{114,110},{69,68}}</string>
+                <string>{{114,108},{69,68}}</string>
                 <key>offset</key>
                 <string>{0,0}</string>
                 <key>rotated</key>
@@ -33,7 +33,7 @@
             <key>item3.png</key>
             <dict>
                 <key>frame</key>
-                <string>{{112,180},{67,66}}</string>
+                <string>{{112,178},{67,66}}</string>
                 <key>offset</key>
                 <string>{0,0}</string>
                 <key>rotated</key>
@@ -46,13 +46,13 @@
             <key>wu1.png</key>
             <dict>
                 <key>frame</key>
-                <string>{{114,2},{104,106}}</string>
+                <string>{{114,2},{106,104}}</string>
                 <key>offset</key>
-                <string>{-1,1}</string>
+                <string>{0,1}</string>
                 <key>rotated</key>
                 <false/>
                 <key>sourceColorRect</key>
-                <string>{{2,1},{104,106}}</string>
+                <string>{{2,2},{106,104}}</string>
                 <key>sourceSize</key>
                 <string>{110,110}</string>
             </dict>
@@ -61,11 +61,11 @@
                 <key>frame</key>
                 <string>{{2,114},{108,108}}</string>
                 <key>offset</key>
-                <string>{0,0}</string>
+                <string>{-1,0}</string>
                 <key>rotated</key>
                 <false/>
                 <key>sourceColorRect</key>
-                <string>{{1,1},{108,108}}</string>
+                <string>{{0,1},{108,108}}</string>
                 <key>sourceSize</key>
                 <string>{110,110}</string>
             </dict>
@@ -92,7 +92,7 @@
             <key>size</key>
             <string>{256,256}</string>
             <key>smartupdate</key>
-            <string>$TexturePacker:SmartUpdate:65baed92afe777a5ecd0c8026e96b4c2$</string>
+            <string>$TexturePacker:SmartUpdate:0c50705c5159006d487adc88eb288495$</string>
             <key>textureFileName</key>
             <string>skillItem.png</string>
         </dict>

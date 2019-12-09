@@ -217,7 +217,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 295,
+      "width": 330.7,
       "height": 100.8
     },
     "_anchorPoint": {
@@ -268,8 +268,8 @@
       }
     ],
     "_useOriginalSize": false,
-    "_string": "You Win",
-    "_N$string": "You Win",
+    "_string": "You Lose",
+    "_N$string": "You Lose",
     "_fontSize": 80,
     "_lineHeight": 80,
     "_enableWrapText": true,
@@ -512,8 +512,8 @@
       }
     ],
     "_useOriginalSize": false,
-    "_string": "下一关",
-    "_N$string": "下一关",
+    "_string": "重来",
+    "_N$string": "重来",
     "_fontSize": 30,
     "_lineHeight": 40,
     "_enableWrapText": false,

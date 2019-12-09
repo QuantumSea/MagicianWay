@@ -227,7 +227,8 @@ cc.Class({
         }
     },
 
-    enemyBorn: function () {
+    enemyBorn: function ( ) {
+        Engine.GameLogs.log( "第" + (this.checkPointData.monsterPackIdx+1) + "波怪物" );
         let ang = 0;
         if (this.PlayerList[0]) {
             ang = 270 - (this.PlayerList[0].angle + 90);
@@ -300,29 +301,42 @@ cc.Class({
                 }
             }  
         }
-
     },
 
     enemyDeath: function ( obj, idx ) {
-        let x = Engine.GameUtils.getRandomNum( -500, 1880 );
-        let y = 1500;
-        let spawn = cc.spawn( cc.moveTo(0.5, cc.v2(x,y)), cc.rotateBy(0.5, 1800) );
-        obj.runAction( cc.sequence(
-            spawn,
-            cc.delayTime(1),
-            cc.callFunc((node) => {
-                node.destroy();
-                this.EnemyList.splice(idx,1)
-                if (this.EnemyList.length == 0) {
-                    this.checkPointData.monsterPackIdx = this.checkPointData.monsterPackIdx + 1;
-                    if (this.checkPointData.monsterPackIdx >= 3) {
-                        this.nextLvLogic();
-                    } else {
+        if (this.getSurvivalEnemyCount() == 0) {
+            this.checkPointData.monsterPackIdx = this.checkPointData.monsterPackIdx + 1;
+            if (Number(this.checkPointData.monsterPackId[this.checkPointData.monsterPackIdx]) > 0) {
+                obj.runAction( cc.sequence(
+                    cc.fadeOut(2),
+                    cc.callFunc((node) => {
+                        node.destroy();
+                        this.EnemyList.splice(idx,1);
                         this.nextMonsterLogic();
-                    }
-                }
-            })
-        ) );
+                    })
+                ) );
+            } else {
+                obj.runAction( cc.sequence(
+                    cc.fadeOut(2),
+                    cc.callFunc((node) => {
+                        node.destroy();
+                        this.EnemyList.splice(idx,1);
+                        Engine.GameLogs.log("关卡挑战成功");
+                        Engine.GameUtils.loadPrefabFile( "prefab/window/WinView", (window) => {
+                            this.node.getComponent("UiPoolComponent").pushUI( window )
+                        });
+                    })
+                ) );
+            }
+        } else {
+            obj.runAction( cc.sequence(
+                cc.fadeOut(2),
+                cc.callFunc((node) => {
+                    node.destroy();
+                    this.EnemyList.splice(idx,1);
+                })
+            ) );
+        }
     },
 
     playerDeath: function ( obj, idx ) {
@@ -355,25 +369,91 @@ cc.Class({
 
     skillBorn: function ( skillIdx, gridWorldPos ) {
         var self = this;
+        var skillData = DB.getTableDataForKey( DB.SkillVo, skillIdx );
+        var targetIdx = this.getSkillTarget( Number(skillData["mubia"]), Number(skillData["mubiaotype"]) );
+        if (targetIdx == -1) {
+            Engine.GameLogs.log("场内没有存活目标");
+            return
+        }
+        self.PlayerList[0].getComponent("RoleComponent").attack();
+        self.parallelWorld.getComponent("ParallelWorldComponent").setTarget( self.EnemyList[targetIdx] );
         let skillobj = cc.instantiate( self.skillItemPrefab );
-        skillobj.x = gridWorldPos.x - self.parallelWorld.x;
-        skillobj.y = gridWorldPos.y - self.parallelWorld.y;
-        let skillData = DB.getTableDataForKey( DB.SkillVo, skillIdx );
+        skillobj.addComponent( "TrackComponent" );
+        var trackData = {
+            Target: self.parallelWorld,
+            Speed: 15,
+        };
+        skillobj.getComponent("TrackComponent").setData( trackData );
+        skillobj.position = gridWorldPos;
         if ( skillobj.getComponent("SkillItemComponent") ) {
             skillobj.getComponent("SkillItemComponent").initData( skillData );
             skillobj.getComponent("SkillItemComponent").setGroup( "arr_skill" );
             let resName = "wu"+skillData["moxing"];
             skillobj.getComponent("SkillItemComponent").setSkillSpriteFrame( self.itemPoolObj.getComponent("ItemPoolComponent").itemAtlas.getSpriteFrame( resName ) );
-            if ( skillobj.getComponent("CircleComponent") ) {
-                skillobj.removeComponent("CircleComponent");
-            }
-            self.parallelWorld.addChild( skillobj );
-            skillobj.getComponent("SkillItemComponent").aiExcute();
+            self.skillLayoutPtr.addChild( skillobj );
         }
     },
 
     updateGridPool: function ( gridDatas ) {
         this.itemPoolObj.getComponent('ItemPoolComponent').initGrids( gridDatas )
+    },
+
+    getSurvivalEnemyCount: function () {
+        var count = 0;
+        this.EnemyList.forEach((enemy, idx) => {
+            if (enemy.getComponent("EnemyComponent").lifeState == true) {
+                count = count + 1;
+            }
+        });
+
+        return count;
+    },
+
+    getSurvivalPlayerCount: function () {
+        var count = 0;
+        this.PlayerList.forEach((player, idx) => {
+            if (player.getComponent("PlayerComponent").lifeState == true) {
+                count = count + 1;
+            }
+        });
+
+        return count;
+    },
+
+    getSkillTarget: function ( target, targetType ) {
+        var targetIdx = -1;
+        function getIdx( targetArr ) {
+            if (targetType == 1) {
+                targetArr.forEach((tar, idx) => {
+                    if (tar.getComponent("RoleComponent").lifeState == true) {
+                        return idx;
+                    }
+                }); 
+            } else if ( targetType == 2 ) {
+                targetArr.forEach((tar, idx) => {
+                    if (tar.getComponent("RoleComponent").lifeState == true) {
+                        targetIdx = idx;
+                    }
+                }); 
+            } else if ( targetType == 3 ) {
+                var hp = 99999999;
+                targetArr.forEach((tar, idx) => {
+                    if (tar.getComponent("RoleComponent").lifeState == true) {
+                        if (tar.getComponent(cc.Component).hp < hp) {
+                            hp = tar.getComponent(cc.Component).hp;
+                            targetIdx = idx;
+                        }
+                    }
+                }); 
+            }  
+        }
+        if (target == 1) {
+            getIdx( this.EnemyList );
+        } else if( target == 2 ) {
+            getIdx( this.PlayerList );
+        }
+
+        return targetIdx;
     },
 
 /**
@@ -425,6 +505,11 @@ cc.Class({
             event.stopPropagation();
             this.enemyDeathLogic();
         }, this);
+        this.node.on('EnemyGetDmg', function ( event ) {
+            Engine.GameLogs.log( "敌人受击" );
+            event.stopPropagation();
+            this.enemyGetDmg( event.target );
+        }, this);
         this.node.on('PlayerDeathCb', function ( event ) {
             Engine.GameLogs.log( "玩家死亡" );
             event.stopPropagation();
@@ -445,6 +530,16 @@ cc.Class({
             this.enemyBorn();
             this.itemPoolObj.getComponent("ItemPoolComponent").clearAllGrids();
         }, this);
+    },
+
+    enemyGetDmg: function ( dmgNode ) {
+        this.EnemyList.forEach((enemy, idx) => {
+            if (enemy.getComponent("EnemyComponent").lifeState == true) {
+                var dmg = dmgNode.getComponent("SkillItemComponent").dmg;
+                enemy.getComponent("EnemyComponent").getHit( dmg );
+                return;
+            }
+        });
     },
 
     enemyDeathLogic: function () {
@@ -490,8 +585,8 @@ cc.Class({
     },
     //下一波怪物
     nextMonsterLogic: function () {
-        Engine.GameLogs.log( "第" + this.checkPointData.monsterPackIdx + "波怪物" );
-        this.enemyBorn();
+        this.enemyBorn( );
+        this.btnGameBegin();
     },
 
     btnGameBegin: function ( ) {
@@ -545,8 +640,6 @@ cc.Class({
                 let gridWorldPos = cmd[1];
                 if (skillIdx > 0) {
                     Engine.GameLogs.log("技能"+skillIdx+"发射");
-                    self.PlayerList[0].getComponent("RoleComponent").attack();
-                    self.parallelWorld.getComponent("ParallelWorldComponent").setTarget( self.EnemyList[0] );
                     self.skillBorn( skillIdx, gridWorldPos );
                 } else {
                     // self.skillPosIdx = 0;

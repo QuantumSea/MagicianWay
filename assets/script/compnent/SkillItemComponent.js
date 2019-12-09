@@ -14,23 +14,18 @@ cc.Class({
     ctor: function () {
         this.jumpState = 0;
         this.dmg = 0;
+        this.step = 5;
     },
 
     onLoad: function  () {
-        this.behaviorComp = this.node.getComponent("CircleComponent");
+        // this.behaviorComp = this.node.getComponent("CircleComponent");
         this.collider = this.node.getComponent(cc.BoxCollider);
-        // let act = cc.sequence(
-        //     cc.delayTime(0.5),
-        //     cc.callFunc((node) => {
-        //         this.node.destroy();
-        //     })
-        // );
-        // act.setTag(99);
-        // this.node.runAction( act );
     },
 
     initData: function ( skillData ) {
         this.dmg = skillData["shanghai"];
+        this.target = skillData["mubia"];               // 1.enemy 2.player
+        this.targetType = skillData["mubiaotype"];      // 1.从前往后朝目标 2.从后往前找目标 3.血量最低的目标
     },
 
     /**
@@ -53,14 +48,32 @@ cc.Class({
     },
 
     update(dt) {
-        var rotation = Engine.GameUtils.getAngleByPts( cc.v2(this.node.x, this.node.y), cc.v2(0,0) );
-        // if (rotation >= 360){
-        //     rotation = rotation - 360
-        // } else if( rotation < 0 ){
-        //     rotation = 360 + rotation;
+        // let aiType = Engine.GameUtils.getRandomNum( 1, 2 );
+        // if (aiType==1) {
+        //     this.step = 3;
+        //     this.itemNode.x = this.itemNode.x + this.step;
+        //     if ( this.itemNode.x > 200 ) {
+        //         this.step = -this.step;       
+        //     } else if ( this.itemNode.x < 0 ) {
+        //         this.step = -this.step;
+        //     }     
+        // } else if (aiType==2) {
+        //     this.step = 1;
+        //     this.itemNode.x = this.itemNode.x - this.step;
+        //     if ( this.itemNode.x > 200 ) {
+        //         this.step = -this.step;       
+        //     } else if ( this.itemNode.x < 0 ) {
+        //         this.step = -this.step;
+        //     }    
+        // } else if (aiType==3) {
+        //     this.itemNode.x = this.itemNode.x + this.step;
+        //     if ( this.itemNode.x > 50 ) {
+        //         this.step = -this.step;       
+        //     } else if ( this.itemNode.x < 0 ) {
+        //         this.step = -this.step;
+        //     }      
         // }
-        Engine.GameLogs.log( String( rotation ) + "," + this.node.x + "," +this.node.y );
-        this.node.angle = rotation;
+
     },
 
     aiExcute: function () {
