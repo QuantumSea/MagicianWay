@@ -93,16 +93,16 @@ cc.Class({
 
     onLoad () {
 
-        // var manager = cc.director.getCollisionManager();
-        // manager.enabled = true;
-        // manager.enabledDebugDraw = true;
-        // manager.enabledDrawBoundingBox = true;
+        var manager = cc.director.getCollisionManager();
+        manager.enabled = true;
+        manager.enabledDebugDraw = true;
+        manager.enabledDrawBoundingBox = true;
 
         this.loadRes();
     },
 
     init () {
-        Game.Data.Player.checkPoint = 1;
+        // Game.Data.Player.checkPoint = 1;
         var guanqiaData = DB.getTableDataForKey( DB.GuanQiaVo, Game.Data.Player.checkPoint );
         this.checkPointData = {
             checkPointIdx:          Game.Data.Player.checkPoint,
@@ -117,7 +117,6 @@ cc.Class({
             monsterPackIdx:         0,
             playerPackId:           guanqiaData["zhujuepack"],
         };
-
         
         this.initGuanQia();
         this.parallelWorld = this.skillLayoutPtr.getChildByName("parallelWorld");
@@ -150,15 +149,6 @@ cc.Class({
             self.uiLayoutPtr.addChild( self.itemPoolObj );   
         }
 
-        // var emptyGrids = this.itemPoolObj.getComponent('ItemPoolComponent').queryEmptyGridsNum();
-        // if (emptyGrids.length == 15) {
-        //     let gridDatas = [];
-        //     if (Game.Data.Player.itemList.length > 0) {
-        //         gridDatas = [...Game.Data.Player.itemList];
-        //     }
-        //     self.updateGridPool( gridDatas );
-        // }
-
         this.checkPointLb = this.rootLayoutPtr.getChildByName("CheckPointLb");
         this.checkPointLb.getComponent(cc.Label).string = "第" + this.checkPointData.checkPointIdx + "关";
 
@@ -167,13 +157,12 @@ cc.Class({
     },
 
     playerBorn: function () {
-        let stepAng = 15;
         let ang = 90;
-        this.PlayerList.forEach((player, idx) => {
-            if (player.getComponent("CircleComponent")) {
-                ang = player.getComponent("CircleComponent").angle;
-            }
-        });
+        // this.PlayerList.forEach((player, idx) => {
+        //     if (player.getComponent("CircleComponent")) {
+        //         ang = player.getComponent("CircleComponent").angle;
+        //     }
+        // });
         let playerAng = ang;
         let playerCountIdx = 0;
         let playerPackData = DB.getTableDataForKey( DB.PlayerPackVo, this.checkPointData.playerPackId );
@@ -182,17 +171,24 @@ cc.Class({
             if (Number(playerId) > 0) {
                 let playerData = DB.getTableDataForKey( DB.PlayerVo, playerId );
                 if (this.PlayerList[index]) {
-                    playerAng = playerAng + 15;
-                    if (playerAng >= 360) {
-                        playerAng = playerAng - 360;
-                    }
                     if ("player"+playerId == this.PlayerList[index].roleKey) {
                         this.PlayerList[index].getComponent("PlayerComponent").roleKey = "player"+playerId;
                         this.PlayerList[index].getComponent("PlayerComponent").playerIdx = playerCountIdx;
                         this.PlayerList[index].getComponent("PlayerComponent").setAnimation( this.ResSpineList[Number(playerData["moxing"])] );
                         continue;
+                        // return;
                     } else {
                         Engine.GameLogs.log(index + "玩家角色ID没有更换" + playerId);
+                        this.PlayerList[index].getComponent("PlayerComponent").onLoad();
+                        if ( this.PlayerList[index].getComponent("CircleComponent") ) {
+                            this.PlayerList[index].getComponent("CircleComponent").angle = playerAng;
+                            this.PlayerList[index].getComponent("CircleComponent").onLoad();
+                            playerAng = playerAng + 15;
+                            if (playerAng >= 360) {
+                                playerAng = playerAng - 360;
+                            }
+                        }
+                        // return;
                         continue;
                     }
                 }
@@ -238,7 +234,6 @@ cc.Class({
                 ang = 0 - ang;
             }         
         }
-        let stepAng = 15;
         let enemyAng = ang;
         // let enemyAng = 0;
         let monsterCountIdx = 0;
@@ -304,6 +299,7 @@ cc.Class({
     },
 
     enemyDeath: function ( obj, idx ) {
+        Engine.GameLogs.log( "敌人" + idx + "死亡" );
         if (this.getSurvivalEnemyCount() == 0) {
             this.checkPointData.monsterPackIdx = this.checkPointData.monsterPackIdx + 1;
             if (Number(this.checkPointData.monsterPackId[this.checkPointData.monsterPackIdx]) > 0) {
@@ -316,6 +312,7 @@ cc.Class({
                     })
                 ) );
             } else {
+                this.skillLayoutPtr.destroyAllChildren();
                 obj.runAction( cc.sequence(
                     cc.fadeOut(2),
                     cc.callFunc((node) => {
@@ -325,6 +322,13 @@ cc.Class({
                         Engine.GameUtils.loadPrefabFile( "prefab/window/WinView", (window) => {
                             this.node.getComponent("UiPoolComponent").pushUI( window )
                         });
+                        this.PlayerList.forEach((player, idx) => {
+                            if (player.getComponent("PlayerComponent").lifeState == true) {
+                                player.getComponent("PlayerComponent").idle();
+                                player.getComponent("CircleComponent").isExcute = false;
+                            }
+                        });
+                        this.itemPoolObj.getComponent("ItemPoolComponent").clearAllGrids();
                     })
                 ) );
             }
@@ -367,30 +371,69 @@ cc.Class({
         ) );
     },
 
-    skillBorn: function ( skillIdx, gridWorldPos ) {
-        var self = this;
-        var skillData = DB.getTableDataForKey( DB.SkillVo, skillIdx );
-        var targetIdx = this.getSkillTarget( Number(skillData["mubia"]), Number(skillData["mubiaotype"]) );
-        if (targetIdx == -1) {
-            Engine.GameLogs.log("场内没有存活目标");
+    skillBorn: function ( cmd ) {
+        var skillIdx = cmd[0];
+        var skillBornPos = cmd[1];
+        if (skillIdx <= 0 ) {
+            Engine.GameLogs.log( "技能不存在" );
             return
         }
-        self.PlayerList[0].getComponent("RoleComponent").attack();
-        self.parallelWorld.getComponent("ParallelWorldComponent").setTarget( self.EnemyList[targetIdx] );
-        let skillobj = cc.instantiate( self.skillItemPrefab );
-        skillobj.addComponent( "TrackComponent" );
-        var trackData = {
-            Target: self.parallelWorld,
-            Speed: 15,
-        };
-        skillobj.getComponent("TrackComponent").setData( trackData );
-        skillobj.position = gridWorldPos;
-        if ( skillobj.getComponent("SkillItemComponent") ) {
-            skillobj.getComponent("SkillItemComponent").initData( skillData );
-            skillobj.getComponent("SkillItemComponent").setGroup( "arr_skill" );
-            let resName = "wu"+skillData["moxing"];
-            skillobj.getComponent("SkillItemComponent").setSkillSpriteFrame( self.itemPoolObj.getComponent("ItemPoolComponent").itemAtlas.getSpriteFrame( resName ) );
-            self.skillLayoutPtr.addChild( skillobj );
+        var self = this;
+        var skillData = DB.getTableDataForKey( DB.SkillVo, skillIdx );
+        Engine.GameLogs.log( "技能" + skillIdx + "发射" );
+        var skillType = Number(skillData["jinengleixing"])
+        var targetIdx = this.getSkillTarget( Number(skillData["mubia"]), Number(skillData["mubiaotype"]) );
+        if (targetIdx == -1) {
+            Engine.GameLogs.log("场内没有存活目标 : " + String(skillData["mubia"]) + "/" + String(skillData["mubiaotype"]) );
+            return
+        }
+
+        if (skillType == 1) {
+            Engine.GameLogs.log("普通攻击");
+        } else if ( skillType == 2 ) {
+            Engine.GameLogs.log("轨道技能");
+            self.PlayerList[0].getComponent("RoleComponent").attack();
+            self.parallelWorld.getComponent("ParallelWorldComponent").setTarget( self.EnemyList[targetIdx] );
+            let skillobj = cc.instantiate( self.skillItemPrefab );
+            skillobj.addComponent( "CircleComponent" );
+            if ( skillobj.getComponent("CircleComponent") ) {
+                skillobj.getComponent( "CircleComponent" ).excuteNode = skillobj;
+                skillobj.getComponent( "CircleComponent" ).centerPos = cc.v2( 320, 680 );
+                skillobj.getComponent( "CircleComponent" ).circleRadius = 265;
+                // skillobj.getComponent( "CircleComponent" ).step = Number(skillData["speed"]);
+                skillobj.getComponent( "CircleComponent" ).step = 5;
+                skillobj.getComponent( "CircleComponent" ).angle = this.PlayerList[0].getComponent("CircleComponent").angle-18;
+                skillobj.getComponent( "CircleComponent" ).isExcute = true;
+            };
+            if ( skillobj.getComponent("SkillItemComponent") ) {
+                skillobj.getComponent("SkillItemComponent").initData( skillData );
+                skillobj.getComponent("SkillItemComponent").setGroup( "arr_skill" );
+                skillobj.getComponent("SkillItemComponent").itemNode.angle = 360-45;
+                let resName = "item"+skillData["moxing"];
+                skillobj.getComponent("SkillItemComponent").setSkillSpriteFrame( self.itemPoolObj.getComponent("ItemPoolComponent").itemAtlas.getSpriteFrame( resName ) );
+                self.skillLayoutPtr.addChild( skillobj );
+            };
+        } else if ( skillType == 3 ) {
+            Engine.GameLogs.log("合成技能");
+            self.PlayerList[0].getComponent("RoleComponent").attack();
+            self.parallelWorld.getComponent("ParallelWorldComponent").setTarget( self.EnemyList[targetIdx] );
+            let skillobj = cc.instantiate( self.skillItemPrefab );
+            skillobj.addComponent( "TrackComponent" );
+            var trackData = {
+                Target: self.parallelWorld,
+                Speed: Number(skillData["speed"]),
+            };
+            skillobj.getComponent("TrackComponent").setData( trackData );
+            skillobj.position = skillBornPos;
+            if ( skillobj.getComponent("SkillItemComponent") ) {
+                skillobj.getComponent("SkillItemComponent").initData( skillData );
+                skillobj.getComponent("SkillItemComponent").setGroup( "arr_skill" );
+                let resName = "wu"+skillData["moxing"];
+                skillobj.getComponent("SkillItemComponent").setSkillSpriteFrame( self.itemPoolObj.getComponent("ItemPoolComponent").itemAtlas.getSpriteFrame( resName ) );
+                self.skillLayoutPtr.addChild( skillobj );
+            }
+        } else if ( skillType == 4 ) {
+            Engine.GameLogs.log("连击技能");
         }
     },
 
@@ -426,7 +469,8 @@ cc.Class({
             if (targetType == 1) {
                 targetArr.forEach((tar, idx) => {
                     if (tar.getComponent("RoleComponent").lifeState == true) {
-                        return idx;
+                        targetIdx = idx;
+                        return false;
                     }
                 }); 
             } else if ( targetType == 2 ) {
@@ -496,12 +540,14 @@ cc.Class({
         this.node.on('btnFireGridsCancelCb', function ( ) {
             this.btnFireLogic( 4 );
         }, this);
+        this.node.on('SkillBorn', function ( cmd ) {
+            this.receiveskillborn( cmd );
+        }, this);
         this.node.on('NextLvCb', function ( event ) {
             event.stopPropagation();
             this.nextLvLogic();
         }, this);
         this.node.on('EnemyDeathCb', function ( event ) {
-            Engine.GameLogs.log( "敌人死亡" );
             event.stopPropagation();
             this.enemyDeathLogic();
         }, this);
@@ -533,8 +579,13 @@ cc.Class({
     },
 
     enemyGetDmg: function ( dmgNode ) {
+        var targetIdx = this.getSkillTarget( Number(dmgNode.getComponent("SkillItemComponent").target), Number(dmgNode.getComponent("SkillItemComponent").targetType) );
+        if (targetIdx == -1) {
+            Engine.GameLogs.log("enemyGetDmg--场内没有存活目标 : " + String(dmgNode.getComponent("SkillItemComponent").target) + "/" + String(dmgNode.getComponent("SkillItemComponent").targetType) );
+            return
+        }
         this.EnemyList.forEach((enemy, idx) => {
-            if (enemy.getComponent("EnemyComponent").lifeState == true) {
+            if ( idx == targetIdx && enemy.getComponent("EnemyComponent").lifeState == true) {
                 var dmg = dmgNode.getComponent("SkillItemComponent").dmg;
                 enemy.getComponent("EnemyComponent").getHit( dmg );
                 return;
@@ -628,34 +679,17 @@ cc.Class({
 
     btnFireLogic: function ( touchType ) {
         let self = this;
+        if (self.getSurvivalEnemyCount() == 0) {
+            Engine.GameLogs.log( "无法发射,场上暂无敌人" );
+            return;
+        }
         if (touchType == 1) {
-            // this.skillPosIdx = 0;
-            // if (this.node.getActionByTag(100)) {
-            //     this.skillPosIdx = 0;
-            //     this.node.stopActionByTag( 100 )   
-            // }
-            let doLogic = function () {
-                let cmd = self.itemPoolObj.getComponent('ItemPoolComponent').consumeGrid();
-                let skillIdx = cmd[0];
-                let gridWorldPos = cmd[1];
-                if (skillIdx > 0) {
-                    Engine.GameLogs.log("技能"+skillIdx+"发射");
-                    self.skillBorn( skillIdx, gridWorldPos );
-                } else {
-                    // self.skillPosIdx = 0;
-                }
-            }
-            doLogic();
+            let cmd = self.itemPoolObj.getComponent('ItemPoolComponent').consumeGrid();
+            let skillIdx = cmd[0];
+            let gridWorldPos = cmd[1];
+            this.receiveskillborn( cmd );
         } else if ( touchType == 3 ) {
-            // if (this.node.getActionByTag(100)) {
-            //     this.node.stopActionByTag( 100 )
-            // }
-            // this.skillPosIdx = 0;
         }else if ( touchType == 4 ) {
-            // if (this.node.getActionByTag(100)) {
-            //     this.node.stopActionByTag( 100 )
-            // }
-            // this.skillPosIdx = 0;
         }
     },
 
@@ -706,4 +740,8 @@ cc.Class({
             Engine.GameUtils.shakeNode( self, self.rootLayoutPtr, 0.5 );      
         }
     },
+
+    receiveskillborn: function ( cmd ) {
+        this.skillBorn( cmd );
+    } 
 });

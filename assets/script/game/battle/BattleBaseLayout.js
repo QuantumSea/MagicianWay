@@ -8,8 +8,12 @@ cc.Class({
         btnBegin: cc.Button,
     },
 
+    ctor () {
+    },
+
     onLoad () {
         this._super();
+        Game.SceneBaseRoot = this.node;
         this.init()
     },
  
@@ -82,7 +86,20 @@ btnGameBeginCb: function (event, eventData) {
 },
 
 btnFireGridsBeginCb: function (event, eventData) {
-    this.node.emit("btnFireGridsBeginCb");
+    this.node.runAction( cc.sequence(
+        cc.delayTime(0.1),
+        cc.callFunc((node) => {
+            this.node.emit("btnFireGridsBeginCb");
+        }),
+        cc.delayTime(0.1),
+        cc.callFunc((node) => {
+            this.node.emit("btnFireGridsBeginCb");
+        }),
+        cc.delayTime(0.1),
+        cc.callFunc((node) => {
+            this.node.emit("btnFireGridsBeginCb");
+        }),
+    ) );
 },
 
 btnFireGridsMoveCb: function (event, eventData) {

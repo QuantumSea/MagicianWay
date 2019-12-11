@@ -11,5 +11,7 @@ window.Game =  {
         this.Data = {
             Player: new PlayerDB()
         }
-    }
+    },
+
+    SceneBaseRoot: null,
 };

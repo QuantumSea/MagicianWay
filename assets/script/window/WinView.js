@@ -11,7 +11,7 @@ cc.Class({
 
     btnNextCb: function (event, eventData) {
 
-        if(eventData == "btnRefreshCb"){
+        if(eventData == "btnNextCb"){
             this.node.dispatchEvent( new cc.Event.EventCustom('NextLvCb', true) );
             this.windowDestroy();
         }

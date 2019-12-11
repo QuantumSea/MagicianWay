@@ -217,7 +217,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 330.7,
+      "width": 295,
       "height": 100.8
     },
     "_anchorPoint": {
@@ -268,8 +268,8 @@
       }
     ],
     "_useOriginalSize": false,
-    "_string": "You Lose",
-    "_N$string": "You Lose",
+    "_string": "You Win",
+    "_N$string": "You Win",
     "_fontSize": 80,
     "_lineHeight": 80,
     "_enableWrapText": true,
@@ -512,8 +512,8 @@
       }
     ],
     "_useOriginalSize": false,
-    "_string": "重来",
-    "_N$string": "重来",
+    "_string": "下一关",
+    "_N$string": "下一关",
     "_fontSize": 30,
     "_lineHeight": 40,
     "_enableWrapText": false,
@@ -699,9 +699,9 @@
       "__id__": 1
     },
     "component": "",
-    "_componentId": "76eb2XyS7xJr6EQhkEuFkr8",
-    "handler": "btnRefreshCb",
-    "customEventData": "btnRefreshCb"
+    "_componentId": "23e1aJxlZ1P8LVForhylG+1",
+    "handler": "btnNextCb",
+    "customEventData": "btnNextCb"
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -715,7 +715,7 @@
     "sync": false
   },
   {
-    "__type__": "76eb2XyS7xJr6EQhkEuFkr8",
+    "__type__": "23e1aJxlZ1P8LVForhylG+1",
     "_name": "",
     "_objFlags": 0,
     "node": {
@@ -723,7 +723,7 @@
     },
     "_enabled": true,
     "isStopPropagation": true,
-    "windowKeys": "FailedView",
+    "windowKeys": "WinView",
     "touchEventNode": {
       "__id__": 1
     },

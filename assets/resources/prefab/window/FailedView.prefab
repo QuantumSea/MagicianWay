@@ -185,7 +185,7 @@
       "__id__": 1
     },
     "asset": {
-      "__uuid__": "152e729b-fbb6-48ed-9d67-13c6359a92c4"
+      "__uuid__": "db3a8434-46f5-4e4d-a5bb-510a0e10fd0b"
     },
     "fileId": "9dcJV9W9tAtaSOyV98rU6Q",
     "sync": false
@@ -217,7 +217,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 295,
+      "width": 330.7,
       "height": 100.8
     },
     "_anchorPoint": {
@@ -268,8 +268,8 @@
       }
     ],
     "_useOriginalSize": false,
-    "_string": "You Win",
-    "_N$string": "You Win",
+    "_string": "You Lose",
+    "_N$string": "You Lose",
     "_fontSize": 80,
     "_lineHeight": 80,
     "_enableWrapText": true,
@@ -290,7 +290,7 @@
       "__id__": 1
     },
     "asset": {
-      "__uuid__": "152e729b-fbb6-48ed-9d67-13c6359a92c4"
+      "__uuid__": "db3a8434-46f5-4e4d-a5bb-510a0e10fd0b"
     },
     "fileId": "7eIGJ9GoZD07TPWUPeXBw5",
     "sync": false
@@ -512,8 +512,8 @@
       }
     ],
     "_useOriginalSize": false,
-    "_string": "下一关",
-    "_N$string": "下一关",
+    "_string": "重来",
+    "_N$string": "重来",
     "_fontSize": 30,
     "_lineHeight": 40,
     "_enableWrapText": false,
@@ -534,7 +534,7 @@
       "__id__": 1
     },
     "asset": {
-      "__uuid__": "152e729b-fbb6-48ed-9d67-13c6359a92c4"
+      "__uuid__": "db3a8434-46f5-4e4d-a5bb-510a0e10fd0b"
     },
     "fileId": "c1Z9n0wdFP64jeOPPbkaxY",
     "sync": false
@@ -604,7 +604,7 @@
       "__id__": 1
     },
     "asset": {
-      "__uuid__": "152e729b-fbb6-48ed-9d67-13c6359a92c4"
+      "__uuid__": "db3a8434-46f5-4e4d-a5bb-510a0e10fd0b"
     },
     "fileId": "f3vSnvMXhPyrSxBfVbpGGX",
     "sync": false
@@ -709,7 +709,7 @@
       "__id__": 1
     },
     "asset": {
-      "__uuid__": "152e729b-fbb6-48ed-9d67-13c6359a92c4"
+      "__uuid__": "db3a8434-46f5-4e4d-a5bb-510a0e10fd0b"
     },
     "fileId": "c5WW92ptVJHZaRWxJBdw1z",
     "sync": false
@@ -738,7 +738,7 @@
       "__id__": 1
     },
     "asset": {
-      "__uuid__": "152e729b-fbb6-48ed-9d67-13c6359a92c4"
+      "__uuid__": "db3a8434-46f5-4e4d-a5bb-510a0e10fd0b"
     },
     "fileId": "1cQL1LnmVLmLYKPSxkpu9K",
     "sync": false

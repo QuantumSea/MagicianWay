@@ -37,6 +37,8 @@ cc.Class({
                 gridState: 0, 
                 gridItemIdx: 0,         //技能ID
                 gridItemLvIdx: 0,       //可合成的技能ID
+                gridItemSkillId: 0,     //合成时释放的技能ID
+                gridItemLv: 0,
                 gridLockState: lockState,
                 gridPos: cc.v2( cc.v2( 60 + (index%5) * 90, 235 - Math.floor(index/5) * 90 ) ),
                 gridObJ: null,
@@ -90,7 +92,7 @@ cc.Class({
             var guanqiaNub = guanqiaData["nub" + Engine.GameUtils.getRandomNum( 1, 2 )];
             let emptyGrids = this.queryEmptyGridsNum();
             if (emptyGrids.length <= 0) {
-                Engine.GameLogs.log("暂无空格子");
+                // Engine.GameLogs.log("暂无空格子");
                 return;
             }
             let gridDatas = [];
@@ -149,6 +151,8 @@ cc.Class({
             let colorResName = "wj_pz"+skillData["pinzhi"];
 
             this.gridPool["grid"+gridIndex].gridItemLvIdx = itemLvIdx;
+            this.gridPool["grid"+gridIndex].gridItemSkillId = skillData["hechengshifang"];
+            this.gridPool["grid"+gridIndex].gridItemLv = skillData["LV"];
 
             if (this.gridPool["grid"+gridIndex].gridObJ == null) {
                 let cloneItem = cc.instantiate( this.gridPrefab );
@@ -224,9 +228,12 @@ cc.Class({
         if (this.gridPool["grid"+sourceIndex].gridItemIdx == this.gridPool["grid"+targetIndex].gridItemIdx) {
             if (this.gridPool["grid"+targetIndex].gridItemLvIdx > 0) {
                 Engine.GameLogs.log( "可合成 ItemId = " + this.gridPool["grid"+targetIndex].gridItemIdx );
+                var hechengSkillId = this.gridPool["grid"+targetIndex].gridItemSkillId;
                 this.clearGrid( sourceIndex );
-                this.updateGrid( targetIndex, this.gridPool["grid"+targetIndex].gridItemLvIdx ); 
-                this.checkAutomaticCarry();          
+                this.updateGrid( targetIndex, this.gridPool["grid"+targetIndex].gridItemLvIdx );
+                var cmd = [hechengSkillId, this.gridPool["grid"+targetIndex].gridObJ.convertToWorldSpaceAR(cc.v2(0, 0))];
+                this.checkAutomaticCarry();
+                Game.SceneBaseRoot.emit('SkillBorn', cmd);
             } else {
                 Engine.GameLogs.log( "无法继续合成了" );
                 this.gridPool["grid"+sourceIndex].gridObJ.getComponent('GridComponent').backPoint();
@@ -260,6 +267,8 @@ cc.Class({
         } 
 
     },
+
+
 
     consumeGrid: function ( ) {
         var cmd = [];

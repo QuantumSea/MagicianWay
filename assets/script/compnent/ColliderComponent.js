@@ -41,12 +41,15 @@ cc.Class({
         var playerBody;
         var skillBody;
 
+        var bodyType = 1;
         if (other.node.group == "arr_enemy") {
             playerBody = other;
             skillBody = self;
+            bodyType = 1;
         } else if (other.node.group == "arr_skill") {
             playerBody = self;
             skillBody = other;
+            bodyType = 2;
         }
 
         if (playerBody.enabled == false) {
@@ -59,37 +62,16 @@ cc.Class({
             return
         }
 
+        
+
         //角色碰撞逻辑
-        var dmg = skillBody.node.getComponent("SkillItemComponent").dmg;
-        playerBody.node.getComponent("RoleComponent").getHit( dmg );
-        playerBody.node.dispatchEvent( new cc.Event.EventCustom('ShakeCb', true) );
-
-        /*if (playerBody.node.getComponent("RoleComponent").hp <= 0) {
-            playerBody.enabled = false;
-            playerBody.node.removeComponent(cc.PolygonCollider);
-            playerBody.node.getComponent("RoleComponent").idle();
-            if (playerBody.node.getComponent("CircleComponent")) {
-                playerBody.node.getComponent("CircleComponent").isExcute = false;
-            }
-            playerBody.node.runAction( cc.sequence(
-                cc.delayTime(0.5),
-                cc.callFunc((node) => {
-                    node.getComponent("RoleComponent").lifeState = false;
-                    node.stopAllActions();
-                    node.dispatchEvent( new cc.Event.EventCustom('EnemyDeathCb', true) );
-                })
-            ) );
-        }*/
-
+        if (bodyType == 1) {
+            skillBody.node.dispatchEvent( new cc.Event.EventCustom('EnemyGetDmg', true) );
+        }
+        
         //技能碰撞逻辑
         skillBody.node.removeComponent(cc.BoxCollider);
-        skillBody.node.stopActionByTag(99);
-        skillBody.node.runAction( cc.sequence(
-            cc.delayTime(0.5),
-            cc.callFunc((node) => {
-                node.destroy();
-            })
-        ) );
+        skillBody.node.destroy();
     },
 
     /**
