@@ -1,0 +1,97 @@
+
+hedan_baozha.png
+size: 512,512
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1
+  rotate: false
+  xy: 0, 152
+  size: 150, 150
+  orig: 150, 150
+  offset: 0, 0
+  index: -1
+10
+  rotate: false
+  xy: 152, 25
+  size: 125, 125
+  orig: 125, 125
+  offset: 0, 0
+  index: -1
+11
+  rotate: false
+  xy: 304, 212
+  size: 125, 125
+  orig: 125, 125
+  offset: 0, 0
+  index: -1
+2
+  rotate: false
+  xy: 202, 339
+  size: 150, 150
+  orig: 150, 150
+  offset: 0, 0
+  index: -1
+3
+  rotate: false
+  xy: 0, 0
+  size: 150, 150
+  orig: 150, 150
+  offset: 0, 0
+  index: -1
+4
+  rotate: false
+  xy: 0, 304
+  size: 200, 185
+  orig: 200, 185
+  offset: 0, 0
+  index: -1
+5
+  rotate: false
+  xy: 354, 339
+  size: 150, 150
+  orig: 150, 150
+  offset: 0, 0
+  index: -1
+6
+  rotate: false
+  xy: 152, 152
+  size: 150, 150
+  orig: 150, 150
+  offset: 0, 0
+  index: -1
+7
+  rotate: true
+  xy: 304, 95
+  size: 115, 116
+  orig: 115, 116
+  offset: 0, 0
+  index: -1
+8
+  rotate: true
+  xy: 431, 239
+  size: 98, 47
+  orig: 98, 47
+  offset: 0, 0
+  index: -1
+9
+  rotate: false
+  xy: 422, 123
+  size: 88, 87
+  orig: 88, 87
+  offset: 0, 0
+  index: -1
+suoding_02
+  rotate: false
+  xy: 279, 39
+  size: 54, 54
+  orig: 54, 54
+  offset: 0, 0
+  index: -1
+zidan
+  rotate: false
+  xy: 422, 85
+  size: 60, 36
+  orig: 60, 36
+  offset: 0, 0
+  index: -1

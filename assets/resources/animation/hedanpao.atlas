@@ -1,0 +1,97 @@
+
+hedanpao.png
+size: 1024,256
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+4
+  rotate: false
+  xy: 0, 69
+  size: 200, 185
+  orig: 200, 185
+  offset: 0, 0
+  index: -1
+pao01
+  rotate: false
+  xy: 202, 93
+  size: 171, 161
+  orig: 171, 161
+  offset: 0, 0
+  index: -1
+pao01_7
+  rotate: false
+  xy: 831, 224
+  size: 32, 30
+  orig: 32, 30
+  offset: 0, 0
+  index: -1
+pao01_8
+  rotate: false
+  xy: 702, 212
+  size: 100, 42
+  orig: 100, 42
+  offset: 0, 0
+  index: -1
+pao02
+  rotate: true
+  xy: 375, 0
+  size: 122, 100
+  orig: 122, 100
+  offset: 0, 0
+  index: -1
+pao03
+  rotate: false
+  xy: 375, 124
+  size: 143, 130
+  orig: 143, 130
+  offset: 0, 0
+  index: -1
+pao04
+  rotate: true
+  xy: 520, 123
+  size: 81, 82
+  orig: 81, 82
+  offset: 0, 0
+  index: -1
+pao05
+  rotate: true
+  xy: 520, 206
+  size: 48, 180
+  orig: 48, 180
+  offset: 0, 0
+  index: -1
+pao06
+  rotate: false
+  xy: 804, 213
+  size: 25, 41
+  orig: 25, 41
+  offset: 0, 0
+  index: -1
+pao07
+  rotate: true
+  xy: 604, 133
+  size: 71, 85
+  orig: 71, 85
+  offset: 0, 0
+  index: -1
+pao08
+  rotate: true
+  xy: 112, 2
+  size: 65, 76
+  orig: 65, 76
+  offset: 0, 0
+  index: -1
+pao09
+  rotate: false
+  xy: 477, 74
+  size: 26, 48
+  orig: 26, 48
+  offset: 0, 0
+  index: -1
+zidan
+  rotate: false
+  xy: 0, 15
+  size: 110, 52
+  orig: 110, 52
+  offset: 0, 0
+  index: -1
