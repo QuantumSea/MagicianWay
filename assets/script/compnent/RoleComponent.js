@@ -59,13 +59,13 @@ cc.Class({
 
     idle: function () {
         if (this.roleAniNode) {
-            this.roleAniNode.setAnimation( 0, "idle", true )
+            this.roleAniNode.setAnimation( 0, "idle", true );
         }
     },
 
     run: function () {
         if (this.roleAniNode) {
-            this.roleAniNode.setAnimation( 0, "run", true )
+            this.roleAniNode.setAnimation( 0, "run", true );
         }
     },
 

@@ -233,7 +233,7 @@ cc.Class({
                 this.updateGrid( targetIndex, this.gridPool["grid"+targetIndex].gridItemLvIdx );
                 var cmd = [hechengSkillId, this.gridPool["grid"+targetIndex].gridObJ.convertToWorldSpaceAR(cc.v2(0, 0))];
                 this.checkAutomaticCarry();
-                Game.SceneBaseRoot.emit('SkillBorn', cmd);
+                Game.SceneBaseRoot.emit('GridCompose', cmd);
             } else {
                 Engine.GameLogs.log( "无法继续合成了" );
                 this.gridPool["grid"+sourceIndex].gridObJ.getComponent('GridComponent').backPoint();

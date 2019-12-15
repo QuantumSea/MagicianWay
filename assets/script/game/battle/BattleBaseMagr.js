@@ -95,8 +95,9 @@ cc.Class({
 
         var manager = cc.director.getCollisionManager();
         manager.enabled = true;
-        manager.enabledDebugDraw = true;
-        manager.enabledDrawBoundingBox = true;
+        cc.debug.setDisplayStats(false);
+        // manager.enabledDebugDraw = true;
+        // manager.enabledDrawBoundingBox = true;
 
         this.loadRes();
     },
@@ -116,6 +117,12 @@ cc.Class({
             monsterPackId:          [guanqiaData["monpackid1"], guanqiaData["monpackid2"], guanqiaData["monpackid3"]],
             monsterPackIdx:         0,
             playerPackId:           guanqiaData["zhujuepack"],
+            composeNum:             0,
+            composeMaxNum:          5,
+            continuityNum:          0,
+            continuityMaxNum:       5,
+            continuityChargeNum:    1,
+            continuityAttenuationNum:   0.25,
         };
         
         this.initGuanQia();
@@ -154,6 +161,22 @@ cc.Class({
 
         self.playerBorn();
         self.enemyBorn();
+
+        this.aiExcuteNode = new cc.Node;
+        this.node.addChild( this.aiExcuteNode );
+        this.aiExcuteNode.runAction( cc.repeatForever( cc.sequence(
+            cc.delayTime(1),
+            cc.callFunc((node) => {
+                if (this.checkPointData.continuityNum > 0) {
+                    this.checkPointData.continuityNum = this.checkPointData.continuityNum - this.checkPointData.continuityAttenuationNum;
+                    if (this.checkPointData.continuityNum < 0) {
+                        this.checkPointData.continuityNum = 0;
+                    }
+                    this.updateContinuityEnergyBar();
+                }
+            })
+        ) ) );
+        cc.director.getActionManager().pauseTarget( this.aiExcuteNode );
     },
 
     playerBorn: function () {
@@ -311,6 +334,7 @@ cc.Class({
                         this.nextMonsterLogic();
                     })
                 ) );
+                cc.director.getActionManager().pauseTarget( this.aiExcuteNode );
             } else {
                 this.skillLayoutPtr.destroyAllChildren();
                 obj.runAction( cc.sequence(
@@ -331,6 +355,7 @@ cc.Class({
                         this.itemPoolObj.getComponent("ItemPoolComponent").clearAllGrids();
                     })
                 ) );
+                cc.director.getActionManager().pauseTarget( this.aiExcuteNode );
             }
         } else {
             obj.runAction( cc.sequence(
@@ -413,6 +438,7 @@ cc.Class({
                 skillobj.getComponent("SkillItemComponent").setSkillSpriteFrame( self.itemPoolObj.getComponent("ItemPoolComponent").itemAtlas.getSpriteFrame( resName ) );
                 self.skillLayoutPtr.addChild( skillobj );
             };
+            this.checkContinuityEnergy();
         } else if ( skillType == 3 ) {
             Engine.GameLogs.log("合成技能");
             self.PlayerList[0].getComponent("RoleComponent").attack();
@@ -540,8 +566,12 @@ cc.Class({
         this.node.on('btnFireGridsCancelCb', function ( ) {
             this.btnFireLogic( 4 );
         }, this);
-        this.node.on('SkillBorn', function ( cmd ) {
+        this.node.on('GridCompose', function ( cmd ) {
+            this.checkPointData.composeNum = this.checkPointData.composeNum + 1;
             this.receiveskillborn( cmd );
+            this.updateComposeEnergyBar();
+            this.checkFireShow();
+            this.checkContinuityEnergy();
         }, this);
         this.node.on('NextLvCb', function ( event ) {
             event.stopPropagation();
@@ -657,6 +687,7 @@ cc.Class({
         if (this.itemPoolObj) {
             this.itemPoolObj.getComponent("ItemPoolComponent").paddingGridsPool();
         }
+        cc.director.getActionManager().resumeTarget( this.aiExcuteNode );
     },
 
     btnUpdateGridsLogic: function ( ) {
@@ -685,9 +716,12 @@ cc.Class({
         }
         if (touchType == 1) {
             let cmd = self.itemPoolObj.getComponent('ItemPoolComponent').consumeGrid();
-            let skillIdx = cmd[0];
-            let gridWorldPos = cmd[1];
+            // let skillIdx = cmd[0];
+            // let gridWorldPos = cmd[1];
             this.receiveskillborn( cmd );
+            this.checkPointData.composeNum = 0;
+            this.checkFireShow();
+            this.updateComposeEnergyBar();
         } else if ( touchType == 3 ) {
         }else if ( touchType == 4 ) {
         }
@@ -743,5 +777,53 @@ cc.Class({
 
     receiveskillborn: function ( cmd ) {
         this.skillBorn( cmd );
-    } 
+    },
+
+    updateComposeEnergyBar: function ( ) {
+        var composeProgressBar = this.uiLayoutPtr.getChildByName( "composeProgressBar" );
+        composeProgressBar.getComponent(cc.ProgressBar).progress = this.checkPointData.composeNum / this.checkPointData.composeMaxNum;
+    },
+
+    updateContinuityEnergyBar: function ( ) {
+        var continuityHitProgressBar = this.uiLayoutPtr.getChildByName( "continuityHitProgressBar" );
+        continuityHitProgressBar.getComponent(cc.ProgressBar).progress = this.checkPointData.continuityNum / this.checkPointData.continuityMaxNum;
+    },
+
+    checkFireShow: function ( ) {
+        var btnFire = this.rootLayoutPtr.getChildByName("btnFire");
+        if (this.checkPointData.composeNum >= this.checkPointData.composeMaxNum) {
+            btnFire.opacity = 255;
+            btnFire.getComponent(cc.Button).onEnable();
+        } else {
+            btnFire.opacity = 0;
+            btnFire.getComponent(cc.Button).onDisable();
+        }
+    },
+
+    checkContinuityEnergy: function ( ) {
+        var self = this;
+        self.checkPointData.continuityNum = self.checkPointData.continuityNum + self.checkPointData.continuityChargeNum;
+        if (self.checkPointData.continuityNum >= self.checkPointData.continuityMaxNum) {
+            Engine.GameLogs.log("发射连击技能！");
+            self.checkPointData.continuityNum = 0;
+            cc.loader.loadRes("animation/hedan_baozha", sp.SkeletonData, function (err, data) {
+                if(!err){
+                    var spine = new cc.Node;
+                    spine.addComponent(sp.Skeleton);
+                    spine.setPosition( 320, 680 );
+                    self.skillLayoutPtr.addChild( spine );
+                    spine.getComponent(sp.Skeleton).skeletonData = data;
+                    spine.getComponent(sp.Skeleton).setAnimation( 0, "born", false );
+                    spine.getComponent(sp.Skeleton).premultipliedAlpha = false;
+                    spine.runAction( cc.sequence(
+                        cc.delayTime(5),
+                        cc.callFunc((node) => {
+                            node.destroy();
+                        })
+                    ) );
+                }
+            }); 
+        }
+        self.updateContinuityEnergyBar();
+    }
 });

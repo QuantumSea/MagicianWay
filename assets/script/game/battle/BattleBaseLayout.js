@@ -119,14 +119,14 @@ btnFireCircleCb: function (event, eventData) {
     if(eventData == "btnFireCircleCb"){
         this.node.emit("btnSkillFireCircle", 0);
     }
-    this.btn2.onDisable();
+    // this.btn2.onDisable();
 
-    this.node.runAction( cc.sequence(
-        cc.delayTime(1),
-        cc.callFunc((node) => {
-            this.btn2.onEnable();
-        })
-    ) );
+    // this.node.runAction( cc.sequence(
+    //     cc.delayTime(1),
+    //     cc.callFunc((node) => {
+    //         this.btn2.onEnable();
+    //     })
+    // ) );
 },
 
 });
