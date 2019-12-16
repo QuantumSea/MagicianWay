@@ -30,7 +30,6 @@
   "excluded-modules": [
     "DragonBones",
     "Physics",
-    "ParticleSystem",
     "StudioComponent",
     "TiledMap",
     "3D",
