@@ -198,13 +198,7 @@ cc.Class({
             if (Number(playerId) > 0) {
                 let playerData = DB.getTableDataForKey( DB.PlayerVo, playerId );
                 if (this.PlayerList[index]) {
-                    if ("player"+playerId == this.PlayerList[index].roleKey) {
-                        this.PlayerList[index].getComponent("PlayerComponent").roleKey = "player"+playerId;
-                        this.PlayerList[index].getComponent("PlayerComponent").playerIdx = playerCountIdx;
-                        this.PlayerList[index].getComponent("PlayerComponent").setAnimation( this.ResSpineList[Number(playerData["moxing"])] );
-                        continue;
-                        // return;
-                    } else {
+                    if ("player"+playerId == this.PlayerList[index].getComponent("PlayerComponent").roleKey) {
                         Engine.GameLogs.log(index + "玩家角色ID没有更换" + playerId);
                         this.PlayerList[index].getComponent("PlayerComponent").onLoad();
                         if ( this.PlayerList[index].getComponent("CircleComponent") ) {
@@ -215,7 +209,13 @@ cc.Class({
                                 playerAng = playerAng - 360;
                             }
                         }
-                        // return;
+                        playerCountIdx = playerCountIdx + 1;
+                        continue;
+                    } else {
+                        this.PlayerList[index].getComponent("PlayerComponent").roleKey = "player"+playerId;
+                        this.PlayerList[index].getComponent("PlayerComponent").playerIdx = playerCountIdx;
+                        this.PlayerList[index].getComponent("PlayerComponent").setAnimation( this.ResSpineList[Number(playerData["moxing"])] );
+                        playerCountIdx = playerCountIdx + 1;
                         continue;
                     }
                 }
