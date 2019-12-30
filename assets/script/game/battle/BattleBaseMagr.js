@@ -64,13 +64,15 @@ cc.Class({
 
     loadRes: function () {
         let self = this;
-
+        let resMaxNum = 7;
         let resData = {
             0:  "animation/contra",
             1:  "animation/contra2",
             2:  "animation/contra3",
             3:  "animation/contra4",
             4:  "animation/contra5",
+            5:  "animation/hedanpao",
+            6:  "animation/hedan_baozha",
         }
 
         var loadResCb = function ( idx ) {
@@ -78,7 +80,7 @@ cc.Class({
                 if(!err){
                     self.ResSpineList[idx] = data;
                     idx = idx + 1
-                    if (idx == 5) {
+                    if (idx == resMaxNum) {
                         self.eventRegister();
                         self.init();
                     } else {
@@ -105,6 +107,7 @@ cc.Class({
     init () {
         // Game.Data.Player.checkPoint = 1;
         var guanqiaData = DB.getTableDataForKey( DB.GuanQiaVo, Game.Data.Player.checkPoint );
+        var guankaSkillData = DB.getTableDataForKey( DB.SkillVo, guanqiaData["nengliangID"] );
         this.checkPointData = {
             checkPointIdx:          Game.Data.Player.checkPoint,
             checkPointInfo:         guanqiaData["guankashuoming"],
@@ -121,8 +124,9 @@ cc.Class({
             composeMaxNum:          5,
             continuityNum:          0,
             continuityMaxNum:       5,
-            continuityChargeNum:    1,
-            continuityAttenuationNum:   0.25,
+            continuitySkillId:      guanqiaData["nengliangID"],
+            continuityChargeNum:    0,         //能量连击增值
+            continuityAttenuationNum:   Number(guanqiaData["shuaijian"])*0.5,       //能量连击衰减值
         };
         
         this.initGuanQia();
@@ -269,12 +273,7 @@ cc.Class({
                 if ( Number( monsterId ) > 0 ) {
                     let monsterData = DB.getTableDataForKey( DB.MonsterVo, monsterId );
                     if (this.EnemyList[monsterCountIdx]) {
-                        if (monsterCountIdx+"enemy"+monsterId == this.EnemyList[monsterCountIdx].roleKey) {
-                            this.EnemyList[monsterCountIdx].getComponent("EnemyComponent").roleKey = monsterCountIdx+"enemy"+monsterId;
-                            this.EnemyList[monsterCountIdx].getComponent("EnemyComponent").monsterIdx = monsterCountIdx;
-                            this.EnemyList[monsterCountIdx].getComponent("EnemyComponent").setAnimation( this.ResSpineList[Number(monsterData["moxing"])] );
-                            return
-                        } else {
+                        if (monsterCountIdx+"enemy"+monsterId == this.EnemyList[monsterCountIdx].getComponent("EnemyComponent").roleKey) {
                             Engine.GameLogs.log(monsterCountIdx + "敌人角色ID没有更换" + monsterId);
                             this.EnemyList[monsterCountIdx].getComponent("EnemyComponent").onLoad();
                             if ( this.EnemyList[monsterCountIdx].getComponent("CircleComponent") ) {
@@ -285,7 +284,14 @@ cc.Class({
                                     enemyAng = enemyAng - 360;
                                 }
                             }
-                            return
+                            monsterCountIdx = monsterCountIdx + 1;
+                            continue;
+                        } else {
+                            this.EnemyList[monsterCountIdx].getComponent("EnemyComponent").roleKey = monsterCountIdx+"enemy"+monsterId;
+                            this.EnemyList[monsterCountIdx].getComponent("EnemyComponent").monsterIdx = monsterCountIdx;
+                            this.EnemyList[monsterCountIdx].getComponent("EnemyComponent").setAnimation( this.ResSpineList[Number(monsterData["moxing"])] );
+                            monsterCountIdx = monsterCountIdx + 1;
+                            continue;
                         }
                     }
                     let roleobj = cc.instantiate( this.enemyPrefab );
@@ -343,6 +349,7 @@ cc.Class({
                         node.destroy();
                         this.EnemyList.splice(idx,1);
                         Engine.GameLogs.log("关卡挑战成功");
+                        Game.Data.Player.checkPoint = Game.Data.Player.checkPoint + 1;
                         Engine.GameUtils.loadPrefabFile( "prefab/window/WinView", (window) => {
                             this.node.getComponent("UiPoolComponent").pushUI( window )
                         });
@@ -352,6 +359,9 @@ cc.Class({
                                 player.getComponent("CircleComponent").isExcute = false;
                             }
                         });
+                        if (this.itemPoolObj) {
+                            this.itemPoolObj.getComponent("ItemPoolComponent").aiStop();
+                        }
                         this.itemPoolObj.getComponent("ItemPoolComponent").clearAllGrids();
                     })
                 ) );
@@ -438,6 +448,7 @@ cc.Class({
                 skillobj.getComponent("SkillItemComponent").setSkillSpriteFrame( self.itemPoolObj.getComponent("ItemPoolComponent").itemAtlas.getSpriteFrame( resName ) );
                 self.skillLayoutPtr.addChild( skillobj );
             };
+            this.checkPointData.continuityChargeNum = Number(skillData["zengjia"]);
             this.checkContinuityEnergy();
         } else if ( skillType == 3 ) {
             Engine.GameLogs.log("合成技能");
@@ -460,6 +471,37 @@ cc.Class({
             }
         } else if ( skillType == 4 ) {
             Engine.GameLogs.log("连击技能");
+            let skillobj = cc.instantiate( self.skillItemPrefab );
+            skillobj.position = skillBornPos;
+            if ( skillobj.getComponent("SkillItemComponent") ) {
+                skillobj.getComponent("SkillItemComponent").initData( skillData );
+                skillobj.getComponent("SkillItemComponent").setGroup( "arr_skill" );
+                self.skillLayoutPtr.addChild( skillobj );
+            }
+            skillobj.runAction( cc.sequence(
+                cc.delayTime(2),
+                cc.callFunc((node) => {
+                    this.shakeLogic();
+                    node.dispatchEvent( new cc.Event.EventCustom('EnemyGetDmg', true) );
+                })
+            ) );
+            cc.loader.loadRes("animation/hedan_baozha", sp.SkeletonData, function (err, data) {
+                if(!err){
+                    var spine = new cc.Node;
+                    spine.addComponent(sp.Skeleton);
+                    spine.setPosition( skillBornPos );
+                    self.skillLayoutPtr.addChild( spine );
+                    spine.getComponent(sp.Skeleton).skeletonData = data;
+                    spine.getComponent(sp.Skeleton).setAnimation( 0, "born", false );
+                    spine.getComponent(sp.Skeleton).premultipliedAlpha = false;
+                    spine.runAction( cc.sequence(
+                        cc.delayTime(5),
+                        cc.callFunc((node) => {
+                            node.destroy();
+                        })
+                    ) );
+                }
+            }); 
         }
     },
 
@@ -515,6 +557,8 @@ cc.Class({
                         }
                     }
                 }); 
+            }  else if ( targetType == 4 ) {
+                targetIdx = 99;
             }  
         }
         if (target == 1) {
@@ -568,10 +612,12 @@ cc.Class({
         }, this);
         this.node.on('GridCompose', function ( cmd ) {
             this.checkPointData.composeNum = this.checkPointData.composeNum + 1;
+            var sourceSkillData = DB.getTableDataForKey( DB.SkillVo, cmd[2] );
+            this.checkPointData.continuityChargeNum = Number(sourceSkillData["zengjia"]);
+            this.checkContinuityEnergy();
             this.receiveskillborn( cmd );
             this.updateComposeEnergyBar();
             this.checkFireShow();
-            this.checkContinuityEnergy();
         }, this);
         this.node.on('NextLvCb', function ( event ) {
             event.stopPropagation();
@@ -614,13 +660,25 @@ cc.Class({
             Engine.GameLogs.log("enemyGetDmg--场内没有存活目标 : " + String(dmgNode.getComponent("SkillItemComponent").target) + "/" + String(dmgNode.getComponent("SkillItemComponent").targetType) );
             return
         }
-        this.EnemyList.forEach((enemy, idx) => {
-            if ( idx == targetIdx && enemy.getComponent("EnemyComponent").lifeState == true) {
-                var dmg = dmgNode.getComponent("SkillItemComponent").dmg;
-                enemy.getComponent("EnemyComponent").getHit( dmg );
-                return;
-            }
-        });
+        if (targetIdx == 99) {
+            //所有目标
+            this.EnemyList.forEach((enemy, idx) => {
+                if ( enemy.getComponent("EnemyComponent").lifeState == true) {
+                    var dmg = dmgNode.getComponent("SkillItemComponent").dmg;
+                    enemy.getComponent("EnemyComponent").getHit( dmg );
+                    return;
+                }
+            }); 
+        } else {
+            this.EnemyList.forEach((enemy, idx) => {
+                if ( idx == targetIdx && enemy.getComponent("EnemyComponent").lifeState == true) {
+                    var dmg = dmgNode.getComponent("SkillItemComponent").dmg;
+                    enemy.getComponent("EnemyComponent").getHit( dmg );
+                    return;
+                }
+            });
+        }
+
     },
 
     enemyDeathLogic: function () {
@@ -659,7 +717,6 @@ cc.Class({
     },
     //下一关
     nextLvLogic: function () {
-        Game.Data.Player.checkPoint = Game.Data.Player.checkPoint + 1;
         cc.sys.localStorage.setItem('userData', JSON.stringify( Game.Data.Player ));
         Engine.GameLogs.log( "准备下一关" );
         this.init();
@@ -806,23 +863,7 @@ cc.Class({
         if (self.checkPointData.continuityNum >= self.checkPointData.continuityMaxNum) {
             Engine.GameLogs.log("发射连击技能！");
             self.checkPointData.continuityNum = 0;
-            cc.loader.loadRes("animation/hedan_baozha", sp.SkeletonData, function (err, data) {
-                if(!err){
-                    var spine = new cc.Node;
-                    spine.addComponent(sp.Skeleton);
-                    spine.setPosition( 320, 680 );
-                    self.skillLayoutPtr.addChild( spine );
-                    spine.getComponent(sp.Skeleton).skeletonData = data;
-                    spine.getComponent(sp.Skeleton).setAnimation( 0, "born", false );
-                    spine.getComponent(sp.Skeleton).premultipliedAlpha = false;
-                    spine.runAction( cc.sequence(
-                        cc.delayTime(5),
-                        cc.callFunc((node) => {
-                            node.destroy();
-                        })
-                    ) );
-                }
-            }); 
+            this.receiveskillborn( [self.checkPointData.continuitySkillId, cc.v2(320, 680)] );
         }
         self.updateContinuityEnergyBar();
     }

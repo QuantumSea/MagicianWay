@@ -25,7 +25,7 @@ cc.Class({
     initData: function ( skillData ) {
         this.dmg = skillData["shanghai"];
         this.target = skillData["mubia"];               // 1.enemy 2.player
-        this.targetType = skillData["mubiaotype"];      // 1.从前往后朝目标 2.从后往前找目标 3.血量最低的目标
+        this.targetType = skillData["mubiaotype"];      // 1.从前往后朝目标 2.从后往前找目标 3.血量最低的目标 4.全体目标
     },
 
     /**

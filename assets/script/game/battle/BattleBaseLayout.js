@@ -29,6 +29,11 @@ cc.Class({
             this.btnBegin.node.opacity = 255;
             this.btnBegin.onEnable();
         }, this);
+        this.node.on('NextLvCb', function ( event ) {
+            event.stopPropagation();
+            this.btnBegin.node.opacity = 255;
+            this.btnBegin.onEnable();
+        }, this);
     },
 
     start () {

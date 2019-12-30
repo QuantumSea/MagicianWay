@@ -229,9 +229,10 @@ cc.Class({
             if (this.gridPool["grid"+targetIndex].gridItemLvIdx > 0) {
                 Engine.GameLogs.log( "可合成 ItemId = " + this.gridPool["grid"+targetIndex].gridItemIdx );
                 var hechengSkillId = this.gridPool["grid"+targetIndex].gridItemSkillId;
+                var sourceSkillId = this.gridPool["grid"+sourceIndex].gridItemIdx
                 this.clearGrid( sourceIndex );
                 this.updateGrid( targetIndex, this.gridPool["grid"+targetIndex].gridItemLvIdx );
-                var cmd = [hechengSkillId, this.gridPool["grid"+targetIndex].gridObJ.convertToWorldSpaceAR(cc.v2(0, 0))];
+                var cmd = [hechengSkillId, this.gridPool["grid"+targetIndex].gridObJ.convertToWorldSpaceAR(cc.v2(0, 0)), sourceSkillId];
                 this.checkAutomaticCarry();
                 Game.SceneBaseRoot.emit('GridCompose', cmd);
             } else {
